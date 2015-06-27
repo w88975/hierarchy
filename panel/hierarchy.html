@@ -1,8 +1,17 @@
+<link rel="import" href="packages://ui-kit/widget/index.html">
+<link rel="import" href="hierarchy-tree.html">
+
 <dom-module id="editor-hierarchy">
     <link rel="import" type="css" href="hierarchy.css">
 
     <template>
-        <h1>Hierarchy</h1>
+        <editor-toolbar>
+            <editor-button>
+                <i class="fa fa-plus"></i>
+            </editor-button>
+            <editor-input id="search" class="flex-1" placeholder="Search..."></editor-input>
+        </editor-toolbar>
+        <hierarchy-tree id="tree" class="flex-1"></hierarchy-tree>
     </template>
 </dom-module>
 

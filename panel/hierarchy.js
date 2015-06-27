@@ -9,6 +9,124 @@ Editor.registerPanel( 'hierarchy.panel', {
 
     ready: function () {
     },
+
+    focusOnSearch: function ( event ) {
+        if ( event ) {
+            event.stopPropagation();
+        }
+
+        this.$.search.setFocus();
+    },
+
+    selectPrev: function ( event ) {
+        if ( event ) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        this.$.tree.selectPrev(true);
+    },
+
+    selectNext: function ( event ) {
+        if ( event ) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        this.$.tree.selectNext(true);
+    },
+
+    // TODO: make it better
+    shiftSelectPrev: function ( event ) {
+        if ( event ) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        this.$.tree.selectPrev(false);
+    },
+
+    // TODO: make it better
+    shiftSelectNext: function ( event ) {
+        if ( event ) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        this.$.tree.selectNext(false);
+    },
+
+    foldCurrent: function ( event ) {
+        if ( event ) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        var activeEL = this.$.tree._activeElement;
+        if ( activeEL ) {
+            if ( activeEL.foldable && !activeEL.folded ) {
+                activeEL.folded = true;
+            }
+        }
+    },
+
+    foldupCurrent: function ( event ) {
+        if ( event ) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        var activeEL = this.$.tree._activeElement;
+        if ( activeEL ) {
+            if ( activeEL.foldable && activeEL.folded ) {
+                activeEL.folded = false;
+            }
+        }
+    },
+
+    'selection:selected': function ( type, ids ) {
+        if ( type !== 'node' )
+            return;
+
+        ids.forEach( function ( id ) {
+            this.$.tree.selectItemById(id);
+        }.bind(this));
+    },
+
+    'selection:unselected': function ( type, ids ) {
+        if ( type !== 'node' )
+            return;
+
+        ids.forEach( function ( id ) {
+            this.$.tree.unselectItemById(id);
+        }.bind(this));
+    },
+
+    'selection:activated': function ( type, id ) {
+        if ( type !== 'node' )
+            return;
+
+        this.$.tree.activeItemById(id);
+    },
+
+    'selection:deactivated': function ( type, id ) {
+        if ( type !== 'node' )
+            return;
+
+        this.$.tree.deactiveItemById(id);
+    },
+
+    'scene:ready': function () {
+        this.$.tree.connectScene();
+    },
+
+    'scene:reloading': function () {
+        this.$.tree.waitForSceneReady();
+    },
+
+    'scene:hierarchy-snapshot': function ( nodes ) {
+        this.$.tree._updateSceneGraph(nodes);
+    },
 });
 
 })();

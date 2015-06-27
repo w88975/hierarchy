@@ -1,5 +1,5 @@
 :host {
-    overflow: auto;
-
     @apply(--layout-vertical);
+
+    overflow: auto;
 }

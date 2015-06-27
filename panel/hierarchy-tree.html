@@ -1,0 +1,20 @@
+<link rel="import" href="hierarchy-item.html">
+
+<dom-module id="hierarchy-tree">
+    <link rel="import" type="css" href="hierarchy-tree.css">
+
+    <template>
+        <content></content>
+        <div id="highlightBorder" class="highlight"></div>
+        <div id="insertLine" class="insert"></div>
+        <editor-input id="nameInput" style="display:none"></editor-input>
+        <editor-loader id="loader" hidden
+            text="Connecting"
+            mask
+        >
+        </editor-loader>
+    </template>
+</dom-module>
+
+<script type="text/javascript" src="packages://ui-tree/widget/id-tree.js"></script>
+<script type="text/javascript" src="hierarchy-tree.js"></script>
