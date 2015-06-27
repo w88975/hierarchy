@@ -3,3 +3,18 @@
 
     overflow: auto;
 }
+
+.fa-unlink {
+    font-size: 14px;
+    color: #f00;
+}
+
+.fa-link {
+    font-size: 14px;
+    color: #0f0;
+}
+
+.fa-link.connecting {
+    font-size: 14px;
+    color: #f90;
+}

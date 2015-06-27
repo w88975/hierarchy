@@ -17,6 +17,12 @@ Polymer({
     },
 
     properties: {
+        connectState: {
+            type: String,
+            value: 'disconnected',
+            notify: true,
+            readOnly: true,
+        },
     },
 
     created: function () {
@@ -30,12 +36,19 @@ Polymer({
     },
 
     waitForSceneReady: function () {
+        this._setConnectState('connecting');
         this.$.loader.hidden = false;
     },
 
     connectScene: function () {
         this.$.loader.hidden = true;
+        this._setConnectState('connected');
         Editor.sendToPanel('scene.panel', 'scene:subscript-hierarchy-snapshot', 100 );
+    },
+
+    disconnectScene: function () {
+        this._setConnectState('disconnected');
+        Editor.sendToPanel('scene.panel', 'scene:unsubscript-hierarchy-snapshot', 100 );
     },
 
     select: function ( itemEL ) {
@@ -84,21 +97,6 @@ Polymer({
                 }
             }
         }
-    },
-
-    _newEntryRecursively: function ( entry ) {
-        var ctor = Editor.widgets['hierarchy-item'];
-        var el = new ctor();
-
-        if ( entry.children ) {
-            entry.children.forEach( function ( childEntry ) {
-                var childEL = this._newEntryRecursively(childEntry);
-                this.addItem( el, childEL, childEntry.name, childEntry.id );
-                // childEL.folded = false;
-            }.bind(this) );
-        }
-
-        return el;
     },
 
     // events
@@ -193,7 +191,60 @@ Polymer({
     },
 
     _updateSceneGraph: function ( nodes ) {
-        // TODO
+        // clear all parents
+        for ( var id in this._id2el ) {
+            var itemEL = this._id2el[id];
+            var parentEL = Polymer.dom(itemEL).parentNode;
+            Polymer.dom(parentEL).removeChild(itemEL);
+        }
+        var id2el = this._id2el;
+        this._id2el = {};
+
+        // start building it
+        try {
+            this._build( nodes, id2el );
+            id2el = null;
+        }
+        catch (err) {
+            Editor.error( 'Failed to build hierarchy tree: %s', err.stack);
+            this.disconnectScene();
+        }
+    },
+
+    _build: function ( data, id2el ) {
+        console.time('hierarchy-tree._build()');
+        data.forEach( function ( entry ) {
+            var newEL = this._newEntryRecursively(entry, id2el);
+            this.addItem( this, newEL, entry.name, entry.id );
+
+            newEL.folded = false;
+        }.bind(this));
+        console.timeEnd('hierarchy-tree._build()');
+
+        // // sync the selection
+        // var selection = Editor.Selection.curSelection('node');
+        // selection.forEach(function ( id ) {
+        //     this.selectItemById(id);
+        // }.bind(this));
+        // this.activeItemById(Editor.Selection.curActivate('node'));
+    },
+
+    _newEntryRecursively: function ( entry, id2el ) {
+        var el = id2el[entry.id];
+        if ( !el ) {
+            var ctor = Editor.widgets['hierarchy-item'];
+            el = new ctor();
+        }
+
+        if ( entry.children ) {
+            entry.children.forEach( function ( childEntry ) {
+                var childEL = this._newEntryRecursively(childEntry);
+                this.addItem( el, childEL, childEntry.name, childEntry.id );
+                // childEL.folded = false;
+            }.bind(this) );
+        }
+
+        return el;
     },
 });
 

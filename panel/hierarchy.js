@@ -8,6 +8,7 @@ Editor.registerPanel( 'hierarchy.panel', {
     },
 
     ready: function () {
+        this.connectState = 'connecting';
     },
 
     focusOnSearch: function ( event ) {
@@ -126,6 +127,15 @@ Editor.registerPanel( 'hierarchy.panel', {
 
     'scene:hierarchy-snapshot': function ( nodes ) {
         this.$.tree._updateSceneGraph(nodes);
+    },
+
+    _connectState: function ( connectState ) {
+        switch (connectState) {
+            case 'connecting': return 'fa fa-link connecting';
+            case 'connected': return 'fa fa-link';
+            case 'disconnected': return 'fa fa-unlink';
+        }
+        return 'fa fa-unlink';
     },
 });
 
