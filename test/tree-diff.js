@@ -248,74 +248,6 @@ describe('diff result', function() {
                 equal: false
             });
         });
-        //it('should be detected if remove last child', function () {
-        //    var oldData = [
-        //        {
-        //            id: '0',
-        //            name: '',
-        //            children: [
-        //                {
-        //                    id: '0-0',
-        //                    name: '',
-        //                    children: null
-        //                }
-        //            ]
-        //        }
-        //    ];
-        //    var newData = [
-        //        {
-        //            id: '0',
-        //            name: '',
-        //            children: null
-        //        }
-        //    ];
-        //    var diff = treeDiff(oldData, newData);
-        //    expect(diff).to.deep.equal({
-        //        cmds: [
-        //            {
-        //                op: 'remove',
-        //                id: '0-0',
-        //            }
-        //        ],
-        //        equal: false
-        //    });
-        //});
-        //it('should be detected if add first children', function () {
-        //    var oldData = [
-        //        {
-        //            id: '0',
-        //            name: '',
-        //            children: null
-        //        }
-        //    ];
-        //    var newData = [
-        //        {
-        //            id: '0',
-        //            name: '',
-        //            children: [
-        //                {
-        //                    id: '0-0',
-        //                    name: '',
-        //                    children: null
-        //                }
-        //            ]
-        //        }
-        //    ];
-        //    var diff = treeDiff(oldData, newData);
-        //    expect(diff).to.deep.equal({
-        //        cmds: [
-        //            {
-        //                op: 'append',
-        //                node: {
-        //                    id: '0-0',
-        //                    name: '',
-        //                    children: null
-        //                }
-        //            }
-        //        ],
-        //        equal: false
-        //    });
-        //});
         it('should be detected if add children', function () {
             var oldData = [
                 {
@@ -394,87 +326,138 @@ describe('diff result', function() {
         });
     });
 
-    //it('should be detected if add elements', function() {
-    //    var oldData = [
-    //        {
-    //           id: 0,
-    //           name: '',
-    //           children: [
-    //               {
-    //                   id: 1,
-    //                   name: 'Honey',
-    //                   children: [
-    //                       {
-    //                           id: 2,
-    //                           name: 'Darling',
-    //                           children: null
-    //                       }
-    //                   ]
-    //               },
-    //               {
-    //                   id: 15,
-    //                   name: 'Daddy',
-    //                   children: null
-    //               }
-    //           ]
-    //       },
-    //       {
-    //           id: 5,
-    //           name: '',
-    //           children: null
-    //       }
-    //    ];
-    //    var newData = [
-    //        {
-    //            id: 0,
-    //            name: '',
-    //            children: [
-    //                {
-    //                    id: 1,
-    //                    name: 'Honey',
-    //                    children: [
-    //                        {
-    //                            id: 2,
-    //                            name: 'Darling',
-    //                            children: null
-    //                        }
-    //                    ]
-    //                },
-    //                {
-    //                    id: 15,
-    //                    name: 'Daddy',
-    //                    children: null
-    //                }
-    //            ]
-    //        },
-    //        {
-    //            id: 5,
-    //            name: '',
-    //            children: null
-    //        }
-    //    ];
-    //    var diff = treeDiff(oldData, newData);
-    //    Editor.log(diff);
-    //    expect(diff).to.deep.equal({
-    //        cmds: [
-    //            {
-    //                op: 'append',
-    //                node: {
-    //                    id: 0,
-    //                    name: '0',
-    //                    children: null
-    //                }
-    //            },
-    //            {
-    //                op: 'append',
-    //                node: {
-    //                    id: 5,
-    //                    name: '5',
-    //                    children: null
-    //                }
-    //            }
-    //        ],
-    //        equal: false
-    //    });
-    //});
+    describe('inserting one node', function() {
+        it('should be detected', function() {
+            var oldData = [
+                {
+                    id: 4,
+                    name: '4',
+                    children: null
+                }
+            ];
+            var newData = [
+                {
+                    id: 0,
+                    name: 'Zero',
+                    children: null
+                },
+                {
+                    id: 4,
+                    name: 'Four',
+                    children: null
+                }
+            ];
+            var diff = treeDiff(oldData, newData);
+            expect(diff).to.deep.equal({
+                cmds: [
+                    {
+                        op: 'insert',
+                        index: 0,
+                        parentId: null,
+                        node: {
+                            id: 0,
+                            name: 'Zero',
+                            children: null
+                        }
+                    },
+                    {
+                        op: 'rename',
+                        id: 4,
+                        name: 'Four'
+                    }
+                ],
+                equal: false
+            });
+        });
+    });
+
+    describe('removing one node', function() {
+        it('should be detected', function() {
+            var oldData = [
+                {
+                    id: 0,
+                    name: 'Zero',
+                    children: null
+                },
+                {
+                    id: 4,
+                    name: '4',
+                    children: null
+                }
+            ];
+            var newData = [
+                {
+                    id: 4,
+                    name: 'Four',
+                    children: null
+                }
+            ];
+            var diff = treeDiff(oldData, newData);
+            expect(diff).to.deep.equal({
+                cmds: [
+                    {
+                        op: 'remove',
+                        id: 0,
+                    },
+                    {
+                        op: 'rename',
+                        id: 4,
+                        name: 'Four'
+                    }
+                ],
+                equal: false
+            });
+        });
+    });
+
+    describe('swapping nodes', function() {
+        it('should be detected', function() {
+            var oldData = [
+                {
+                    id: 0,
+                    name: '0',
+                    children: null
+                },
+                {
+                    id: 4,
+                    name: '4',
+                    children: null
+                }
+            ];
+            var newData = [
+                {
+                    id: 4,
+                    name: 'Four',
+                    children: null
+                },
+                {
+                    id: 0,
+                    name: 'Zero',
+                    children: null
+                }
+            ];
+            var diff = treeDiff(oldData, newData);
+            expect(diff).to.deep.equal({
+                cmds: [
+                    {
+                        op: 'move',
+                        id: 0,
+                        index: 1,
+                        parentId: null
+                    },
+                    {
+                        op: 'rename',
+                        id: 0,
+                        name: 'Zero'
+                    },
+                    {
+                        op: 'rename',
+                        id: 4,
+                        name: 'Four'
+                    }
+                ],
+                equal: false
+            });
+        });
+    });
 });
