@@ -39,7 +39,7 @@
         "selection:deactivated",
         "scene:ready",
         "scene:reloading",
-        "scene:hierarchy-snapshot"
+        "scene:reply-query-hierarchy"
       ],
       "profiles": {
         "local": {

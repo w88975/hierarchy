@@ -125,7 +125,7 @@ Editor.registerPanel( 'hierarchy.panel', {
         this.$.tree.waitForSceneReady();
     },
 
-    'scene:hierarchy-snapshot': function ( nodes ) {
+    'scene:reply-query-hierarchy': function ( nodes ) {
         this.$.tree._updateSceneGraph(nodes);
     },
 

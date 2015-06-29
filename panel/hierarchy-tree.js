@@ -43,12 +43,11 @@ Polymer({
     connectScene: function () {
         this.$.loader.hidden = true;
         this._setConnectState('connected');
-        Editor.sendToPanel('scene.panel', 'scene:subscript-hierarchy-snapshot', 100 );
+        Editor.sendToPanel('scene.panel', 'scene:query-hierarchy' );
     },
 
     disconnectScene: function () {
         this._setConnectState('disconnected');
-        Editor.sendToPanel('scene.panel', 'scene:unsubscript-hierarchy-snapshot', 100 );
     },
 
     select: function ( itemEL ) {
@@ -204,6 +203,10 @@ Polymer({
         try {
             this._build( nodes, id2el );
             id2el = null;
+
+            this.async( function () {
+                Editor.sendToPanel('scene.panel', 'scene:query-hierarchy' );
+            }, 100 );
         }
         catch (err) {
             Editor.error( 'Failed to build hierarchy tree: %s', err.stack);
@@ -212,15 +215,16 @@ Polymer({
     },
 
     _build: function ( data, id2el ) {
-        console.time('hierarchy-tree._build()');
+        // console.time('hierarchy-tree._build()');
         data.forEach( function ( entry ) {
             var newEL = this._newEntryRecursively(entry, id2el);
             this.addItem( this, newEL, entry.name, entry.id );
 
             newEL.folded = false;
         }.bind(this));
-        console.timeEnd('hierarchy-tree._build()');
+        // console.timeEnd('hierarchy-tree._build()');
 
+        // DISABLE: I should find a place restore it, not here.
         // // sync the selection
         // var selection = Editor.Selection.curSelection('node');
         // selection.forEach(function ( id ) {

@@ -82,7 +82,7 @@ Editor.registerWidget( 'hierarchy-item', {
     },
 
     _nameText: function ( name ) {
-        if ( name === '' )
+        if ( !name )
             return 'No Name';
         return name;
     },
