@@ -1,5 +1,7 @@
 (function () {
 
+var treeDiff = Editor.require('app://builtin/hierarchy/utils/tree-diff');
+
 Polymer({
     is: 'hierarchy-tree',
 
@@ -30,6 +32,7 @@ Polymer({
 
     ready: function () {
         this._shiftStartElement = null;
+        this._lastSnapshot = null;
         this._initFocusable(this);
 
         this.waitForSceneReady();
@@ -194,33 +197,37 @@ Polymer({
     },
 
     _updateSceneGraph: function ( nodes ) {
-        // clear all parents
-        for ( var id in this._id2el ) {
-            var itemEL = this._id2el[id];
-            var parentEL = Polymer.dom(itemEL).parentNode;
-            Polymer.dom(parentEL).removeChild(itemEL);
-        }
-        var id2el = this._id2el;
-        this._id2el = {};
-
-        // start building it
-        try {
-            this._build( nodes, id2el );
-            id2el = null;
-
-            if ( this._queryID ) {
-                this.cancelAsync(this._queryID);
-                this._queryID = null;
+        var diffResult = treeDiff(this._lastSnapshot, nodes);
+        if (! diffResult.equal) {
+            // clear all parents
+            for ( var id in this._id2el ) {
+                var itemEL = this._id2el[id];
+                var parentEL = Polymer.dom(itemEL).parentNode;
+                Polymer.dom(parentEL).removeChild(itemEL);
             }
-            this._queryID = this.async( function () {
-                this._queryID = null;
-                Editor.sendToPanel('scene.panel', 'scene:query-hierarchy' );
-            }, 100 );
+            var id2el = this._id2el;
+            this._id2el = {};
+
+            // start building it
+            try {
+                this._build( nodes, id2el );
+                id2el = null;
+            }
+            catch (err) {
+                Editor.error( 'Failed to build hierarchy tree: %s', err.stack);
+                this.disconnectScene();
+            }
         }
-        catch (err) {
-            Editor.error( 'Failed to build hierarchy tree: %s', err.stack);
-            this.disconnectScene();
+        this._lastSnapshot = nodes;
+
+        if ( this._queryID ) {
+            this.cancelAsync(this._queryID);
+            this._queryID = null;
         }
+        this._queryID = this.async( function () {
+            this._queryID = null;
+            Editor.sendToPanel('scene.panel', 'scene:query-hierarchy' );
+        }, 100 );
     },
 
     _build: function ( data, id2el ) {

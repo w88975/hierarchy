@@ -49,6 +49,6 @@
     }
   },
   "tests": [
-    "test/basic.html"
+    "test/run-tree-diff.html"
   ]
 }
