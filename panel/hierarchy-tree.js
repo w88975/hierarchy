@@ -47,6 +47,10 @@ Polymer({
     },
 
     disconnectScene: function () {
+        if ( this._queryID ) {
+            this.cancelAsync(this._queryID);
+            this._queryID = null;
+        }
         this._setConnectState('disconnected');
     },
 
@@ -204,7 +208,12 @@ Polymer({
             this._build( nodes, id2el );
             id2el = null;
 
-            this.async( function () {
+            if ( this._queryID ) {
+                this.cancelAsync(this._queryID);
+                this._queryID = null;
+            }
+            this._queryID = this.async( function () {
+                this._queryID = null;
                 Editor.sendToPanel('scene.panel', 'scene:query-hierarchy' );
             }, 100 );
         }

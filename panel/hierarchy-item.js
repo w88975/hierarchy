@@ -76,7 +76,7 @@ Editor.registerWidget( 'hierarchy-item', {
     //
 
     _nameClass: function ( name ) {
-        if ( name === '' )
+        if ( !name )
             return 'no-name';
         return 'name';
     },
