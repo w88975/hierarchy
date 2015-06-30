@@ -1,5 +1,7 @@
 (function () {
 
+var treeDiff = Editor.require('app://builtin/hierarchy/utils/tree-diff');
+
 Polymer({
     is: 'hierarchy-tree',
 
@@ -30,6 +32,7 @@ Polymer({
 
     ready: function () {
         this._shiftStartElement = null;
+        this._lastSnapshot = null;
         this._initFocusable(this);
 
         this.waitForSceneReady();
@@ -196,7 +199,7 @@ Polymer({
         Editor.Selection.cancel();
     },
 
-    _updateSceneGraph: function ( nodes ) {
+    _rebuild: function (nodes) {
         // clear all parents
         for ( var id in this._id2el ) {
             var itemEL = this._id2el[id];
@@ -210,20 +213,101 @@ Polymer({
         try {
             this._build( nodes, id2el );
             id2el = null;
-
-            if ( this._queryID ) {
-                this.cancelAsync(this._queryID);
-                this._queryID = null;
-            }
-            this._queryID = this.async( function () {
-                this._queryID = null;
-                Editor.sendToPanel('scene.panel', 'scene:query-hierarchy' );
-            }, 100 );
         }
         catch (err) {
             Editor.error( 'Failed to build hierarchy tree: %s', err.stack);
             this.disconnectScene();
         }
+    },
+
+    _applyCmds: function (cmds) {
+        var id2el = this._id2el;
+        var el, node, newParent, newEL;
+
+        for (var i = 0; i < cmds.length; i++) {
+            var cmd = cmds[i];
+            switch (cmd.op) {
+
+                case 'append':
+                    node = cmd.node;
+                    newEL = this._newEntryRecursively(node, id2el);
+                    newParent = cmd.parentId !== null ? id2el[cmd.parentId] : this;
+                    this.addItem( newParent, newEL, node.name, node.id );
+                    break;
+
+                case 'remove':
+                    this.removeItemById(cmd.id);
+                    break;
+
+                case 'replace':
+                    el = id2el[cmd.id];
+                    node = cmd.node;
+                    var isLeaf = Polymer.dom(el).childNodes === 0 && !node.children;
+                    if (isLeaf) {
+                        el.name = node.name;
+
+                        delete id2el[cmd.id];
+                        el._userId = node.id;
+                        id2el[node.id] = el;
+                    }
+                    else {
+                        newParent = Polymer.dom(el).parentNode;
+                        this.removeItem(el);
+                        newEL = this._newEntryRecursively(node, id2el);
+                        this.addItem( newParent, newEL, node.name, node.id );
+                    }
+                    break;
+
+                case 'rename':
+                    this.renameItemById(cmd.id, cmd.name);
+                    break;
+
+                case 'move':
+                    el = id2el[cmd.id];
+                    newParent = cmd.parentId !== null ? id2el[cmd.parentId] : this;
+                    if (newParent !== Polymer.dom(el).parentNode) {
+                        this.setItemParent(el, newParent);
+                    }
+                    var beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
+                    Polymer.dom(newParent).insertBefore(el, beforeNode);
+                    break;
+
+                case 'insert':
+                    node = cmd.node;
+                    newEL = this._newEntryRecursively(node, id2el);
+                    newParent = cmd.parentId !== null ? id2el[cmd.parentId] : this;
+                    this.addItem( newParent, newEL, node.name, node.id );
+                    var beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
+                    Polymer.dom(newParent).insertBefore(newEL, beforeNode);
+                    break;
+
+                default:
+                    Editor.error('Unsupported operation', cmd.op);
+                    break;
+            }
+        }
+    },
+
+    _updateSceneGraph: function ( nodes ) {
+        var diffResult = treeDiff(this._lastSnapshot, nodes);
+        if (! diffResult.equal) {
+            if (diffResult.cmds.length > 100) {
+                this._rebuild(nodes);
+            }
+            else {
+                this._applyCmds(diffResult.cmds);
+            }
+            this._lastSnapshot = nodes;
+        }
+
+        if ( this._queryID ) {
+            this.cancelAsync(this._queryID);
+            this._queryID = null;
+        }
+        this._queryID = this.async( function () {
+            this._queryID = null;
+            Editor.sendToPanel('scene.panel', 'scene:query-hierarchy' );
+        }, 100 );
     },
 
     _build: function ( data, id2el ) {
@@ -254,7 +338,7 @@ Polymer({
 
         if ( entry.children ) {
             entry.children.forEach( function ( childEntry ) {
-                var childEL = this._newEntryRecursively(childEntry);
+                var childEL = this._newEntryRecursively(childEntry, id2el);
                 this.addItem( el, childEL, childEntry.name, childEntry.id );
                 // childEL.folded = false;
             }.bind(this) );
