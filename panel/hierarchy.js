@@ -137,6 +137,11 @@ Editor.registerPanel( 'hierarchy.panel', {
         }
         return 'fa fa-unlink';
     },
+
+    _onStateClick: function ( event ) {
+        event.stopPropagation();
+        this.$.tree.connectScene();
+    },
 });
 
 })();

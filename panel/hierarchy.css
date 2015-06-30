@@ -6,15 +6,21 @@
 
 .fa-unlink {
     font-size: 14px;
+
     color: #f00;
+    cursor: pointer;
 }
 
 .fa-link {
     font-size: 14px;
+
     color: #0f0;
+    cursor: default;
 }
 
 .fa-link.connecting {
     font-size: 14px;
+
     color: #f90;
+    cursor: default;
 }

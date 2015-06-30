@@ -10,7 +10,10 @@
                 <i class="fa fa-plus"></i>
             </editor-button>
             <editor-input id="search" class="flex-1" placeholder="Search..."></editor-input>
-            <i class$="{{_connectState(connectState)}}"></i>
+            <i class$="{{_connectState(connectState)}}"
+                on-click="_onStateClick"
+                >
+            </i>
         </editor-toolbar>
         <hierarchy-tree id="tree" class="flex-1"
             connect-state="{{connectState}}"

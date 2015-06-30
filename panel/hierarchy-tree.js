@@ -41,6 +41,9 @@ Polymer({
     },
 
     connectScene: function () {
+        if ( this._connectState === 'connected' || this._connectState === 'connecting' )
+            return;
+
         this.$.loader.hidden = true;
         this._setConnectState('connected');
         Editor.sendToPanel('scene.panel', 'scene:query-hierarchy' );
