@@ -5,6 +5,7 @@
 // - http://stackoverflow.com/a/29999368
 // - https://en.wikipedia.org/wiki/Graph_isomorphism_problem
 // - https://static.aminer.org/pdf/PDF/000/301/327/x_diff_an_effective_change_detection_algorithm_for_xml_documents.pdf
+// - https://github.com/Matt-Esch/virtual-dom
 
 // assert: lastItem.id === newItem.id
 function compareItemProps (cmds, lastItem, newItem) {
@@ -146,12 +147,49 @@ function compareChildren ( cmds, lastChildren, newChildren, parentId ) {
     }
 }
 
+// 如果同个ID的节点有 先添加再移除 的操作，则将移除操作提前，防止应用补丁时发生ID重复的问题
+function sortOperationsById (cmds) {
+    var removingCmds = [];
+    var addingCmds = {};
+    for (var i = 0, len = cmds.length; i < len; i++) {
+        var cmd = cmds[i];
+        switch (cmd.op) {
+            case 'append':
+            case 'insert':
+                addingCmds[cmd.node.id] = cmd;
+                break;
+            case 'remove':
+                removingCmds.push(cmd);
+                break;
+
+            case 'replace':
+                removingCmds.push(cmd);
+                addingCmds[cmd.node.id] = cmd;
+                break;
+        }
+    }
+    for (var r = 0; r < removingCmds.length; r++) {
+        var rmCmd = removingCmds[r];
+        var addCmd = addingCmds[rmCmd.id];
+        if (addCmd) {
+            // TODO - 优化成 move
+            var addCmdIndex = cmds.indexOf(addCmd);
+            var rmCmdIndex = cmds.indexOf(rmCmd);
+            if (addCmdIndex < rmCmdIndex) {
+                cmds.splice(rmCmdIndex, 1);
+                cmds.splice(addCmdIndex, 0, rmCmd);
+            }
+        }
+    }
+}
+
 // assert: newRoots non-nil and lastRoots writable
 function treeDiff ( lastRoots, newRoots ) {
     lastRoots = lastRoots || [];
 
     var cmds = [];
     compareChildren(cmds, lastRoots, newRoots, null);
+    sortOperationsById(cmds);
 
     return {
         cmds: cmds,
