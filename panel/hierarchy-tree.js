@@ -239,11 +239,20 @@ Polymer({
                 case 'replace':
                     el = id2el[cmd.id];
                     node = cmd.node;
-                    el.name = node.name;
+                    var isLeaf = Polymer.dom(el).childNodes === 0 && !node.children;
+                    if (isLeaf) {
+                        el.name = node.name;
 
-                    delete id2el[cmd.id];
-                    el._userId = node.id;
-                    id2el[node.id] = el;
+                        delete id2el[cmd.id];
+                        el._userId = node.id;
+                        id2el[node.id] = el;
+                    }
+                    else {
+                        newParent = Polymer.dom(el).parentNode;
+                        this.removeItem(el);
+                        newEL = this._newEntryRecursively(node, id2el);
+                        this.addItem( newParent, newEL, node.name, node.id );
+                    }
                     break;
 
                 case 'rename':

@@ -49,6 +49,7 @@
     }
   },
   "tests": [
-    "test/run-tree-diff.html"
+    "test/tree-diff.js",
+    "test/apply-diff.html"
   ]
 }
