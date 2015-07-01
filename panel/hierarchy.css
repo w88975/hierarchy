@@ -1,7 +1,5 @@
 :host {
     @apply(--layout-vertical);
-
-    overflow: auto;
 }
 
 .fa-unlink {
