@@ -1,6 +1,6 @@
 (function () {
 
-var treeDiff = Editor.require('app://builtin/hierarchy/utils/tree-diff');
+var treeDiff = Editor.require('packages://hierarchy/utils/tree-diff');
 
 Polymer({
     is: 'hierarchy-tree',
@@ -221,7 +221,7 @@ Polymer({
 
     _applyCmds: function (cmds) {
         var id2el = this._id2el;
-        var el, node, newParent, newEL;
+        var el, node, beforeNode, newParent, newEL;
 
         for (var i = 0; i < cmds.length; i++) {
             var cmd = cmds[i];
@@ -267,7 +267,7 @@ Polymer({
                     if (newParent !== Polymer.dom(el).parentNode) {
                         this.setItemParent(el, newParent);
                     }
-                    var beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
+                    beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
                     Polymer.dom(newParent).insertBefore(el, beforeNode);
                     break;
 
@@ -276,7 +276,7 @@ Polymer({
                     newEL = this._newEntryRecursively(node, id2el);
                     newParent = cmd.parentId !== null ? id2el[cmd.parentId] : this;
                     this.addItem( newParent, newEL, node.name, node.id );
-                    var beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
+                    beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
                     Polymer.dom(newParent).insertBefore(newEL, beforeNode);
                     break;
 
