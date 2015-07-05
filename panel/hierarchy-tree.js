@@ -5,7 +5,11 @@ var treeDiff = Editor.require('packages://hierarchy/utils/tree-diff');
 Polymer({
     is: 'hierarchy-tree',
 
-    behaviors: [EditorUI.focusable, EditorUI.idtree],
+    behaviors: [EditorUI.focusable, EditorUI.droppable, EditorUI.idtree],
+
+    hostAttributes: {
+        'droppable': 'asset,node',
+    },
 
     listeners: {
         'focus': '_onFocus',
@@ -15,6 +19,10 @@ Polymer({
         'mousedown': '_onMouseDown',
         'dragstart': '_onDragStart',
         'dragend': '_onDragEnd',
+        'dragover': '_onDragOver',
+        'drop-area-enter': '_onDropAreaEnter',
+        'drop-area-leave': '_onDropAreaLeave',
+        'drop-area-accept': '_onDropAreaAccept',
     },
 
     properties: {
@@ -33,6 +41,7 @@ Polymer({
         this._shiftStartElement = null;
         this._lastSnapshot = null;
         this._initFocusable(this);
+        this._initDroppable(this);
 
         this.waitForSceneReady();
     },
@@ -179,6 +188,8 @@ Polymer({
         this.$.content.scrollLeft = 0;
     },
 
+    // drag & drop
+
     _onDragStart: function ( event ) {
         event.stopPropagation();
 
@@ -196,7 +207,157 @@ Polymer({
     _onDragEnd: function ( event ) {
         EditorUI.DragDrop.end();
         Editor.Selection.cancel();
+        this._cancelHighligting();
     },
+
+    _onDragOver: function ( event ) {
+        var dragType = EditorUI.DragDrop.type(event.dataTransfer);
+        if ( dragType !== 'node' && dragType !== 'asset' ) {
+            EditorUI.DragDrop.allowDrop( event.dataTransfer, false );
+            return;
+        }
+
+        //
+        event.preventDefault();
+        event.stopPropagation();
+
+        //
+        if ( event.target ) {
+            var position;
+            var bcr = this.getBoundingClientRect();
+            var offsetY = event.clientY - bcr.top + this.$.content.scrollTop;
+
+            var targetEL = Polymer.dom(event).localTarget;
+            var thisDOM = Polymer.dom(this);
+
+            //
+            if ( thisDOM.children.length > 0 ) {
+                if ( targetEL !== this._curDragoverEL ) {
+                    if ( targetEL === this ) {
+                        if ( offsetY <= thisDOM.firstElementChild.offsetTop ) {
+                            targetEL = thisDOM.firstElementChild;
+                        }
+                        else {
+                            targetEL = thisDOM.lastElementChild;
+                        }
+                    }
+                    this._curDragoverEL = targetEL;
+                }
+
+                // highlight insertion
+                if ( offsetY <= (targetEL.offsetTop + targetEL.offsetHeight * 0.3) )
+                    position = 'before';
+                else if ( offsetY >= (targetEL.offsetTop + targetEL.offsetHeight * 0.7) )
+                    position = 'after';
+                else
+                    position = 'inside';
+
+                if ( position === 'inside' ) {
+                    this._highlightBorder( targetEL );
+                }
+                else {
+                    this._highlightBorder( Polymer.dom(targetEL).parentNode );
+                }
+                this._highlightInsert( targetEL, position );
+            }
+
+            //
+            EditorUI.DragDrop.allowDrop(event.dataTransfer, true);
+        }
+
+        //
+        var dropEffect = 'none';
+        if ( dragType === 'asset' ) {
+            dropEffect = 'copy';
+        } else if ( dragType === 'node' ) {
+            dropEffect = 'move';
+        }
+        EditorUI.DragDrop.updateDropEffect(event.dataTransfer, dropEffect);
+    },
+
+    _onDropAreaEnter: function ( event ) {
+        event.stopPropagation();
+    },
+
+    _onDropAreaLeave: function ( event ) {
+        event.stopPropagation();
+        this._cancelHighligting();
+    },
+
+    _onDropAreaAccept: function ( event ) {
+        event.stopPropagation();
+
+        this._cancelHighligting();
+        Editor.Selection.cancel();
+
+        //
+        if ( event.detail.dragItems.length > 0 ) {
+            // get next sibliing id
+            var hoverEL = event.detail.dropTarget;
+            var targetEL = null;
+            var nextSiblingId = null;
+            var bcr = this.getBoundingClientRect();
+            var offsetY = event.detail.clientY - bcr.top + this.$.content.scrollTop;
+
+            var thisDOM = Polymer.dom(this);
+            var hoverDOM = Polymer.dom(hoverEL);
+
+            if ( hoverEL === this ) {
+                targetEL = null;
+                if ( thisDOM.firstElementChild ) {
+                    if ( offsetY <= thisDOM.firstElementChild.offsetTop ) {
+                        nextSiblingId = thisDOM.firstElementChild._userId;
+                    }
+                }
+            }
+            else {
+                if ( offsetY <= (hoverEL.offsetTop + hoverEL.offsetHeight * 0.3) ) {
+                    nextSiblingId = hoverEL._userId;
+                    targetEL = hoverDOM.parentNode;
+                }
+                else if ( offsetY >= (hoverEL.offsetTop + hoverEL.offsetHeight * 0.7) ) {
+                    if ( hoverDOM.nextElementSibling ) {
+                        nextSiblingId = hoverDOM.nextElementSibling._userId;
+                    }
+                    else {
+                        nextSiblingId = null;
+                    }
+                    targetEL = hoverDOM.parentNode;
+                }
+                else {
+                    nextSiblingId = null;
+                    targetEL = hoverEL;
+                    if ( hoverDOM.firstElementChild ) {
+                        nextSiblingId = hoverDOM.firstElementChild._userId;
+                    }
+                }
+            }
+
+            // if target is root, set it to null
+            if ( targetEL === this ) {
+                targetEL = null;
+            }
+
+            // process drop
+            if ( event.detail.dragType === 'node' ) {
+                Editor.sendToPanel('scene.panel',
+                                   'scene:move-nodes',
+                                   event.detail.dragItems,
+                                   targetEL ? targetEL._userId : null,
+                                   nextSiblingId
+                                  );
+            }
+            else if ( event.detail.dragType === 'asset' ) {
+                Editor.sendToPanel('scene.panel',
+                                   'scene:create-assets',
+                                   event.detail.dragItems,
+                                   targetEL ? targetEL._userId : null
+                                  );
+            }
+        }
+    },
+
+    // private methods
 
     _rebuild: function (nodes) {
         // clear all parents
@@ -344,6 +505,60 @@ Polymer({
         }
 
         return el;
+    },
+
+    // highlighting
+
+    _highlightBorder: function ( itemEL ) {
+        if ( itemEL && itemEL instanceof Editor.widgets['hierarchy-item'] ) {
+            var style = this.$.highlightBorder.style;
+            style.display = 'block';
+            style.left = (itemEL.offsetLeft-2) + 'px';
+            style.top = (itemEL.offsetTop-1) + 'px';
+            style.width = (itemEL.offsetWidth+4) + 'px';
+            style.height = (itemEL.offsetHeight+3) + 'px';
+        }
+        else {
+            this.$.highlightBorder.style.display = 'none';
+        }
+    },
+
+    _highlightInsert: function ( itemEL, position ) {
+        if ( itemEL ) {
+            var style = this.$.insertLine.style;
+
+            if ( position === 'inside' ) {
+                var itemDOM = Polymer.dom(itemEL);
+                if ( !itemEL.folded && itemDOM.firstElementChild ) {
+                    style.display = 'block';
+                    style.top = (itemDOM.firstElementChild.offsetTop-1) + 'px';
+                    style.left = (itemDOM.firstElementChild.offsetLeft-2) + 'px';
+                    style.width = (itemDOM.firstElementChild.offsetWidth+4) + 'px';
+                    style.height = '0px';
+                }
+                else {
+                    style.display = 'none';
+                }
+            }
+            else {
+                style.display = 'block';
+
+                style.left = (itemEL.offsetLeft-2) + 'px';
+                style.width = (itemEL.offsetWidth+4) + 'px';
+
+                if ( position === 'before' )
+                    style.top = itemEL.offsetTop + 'px';
+                else if ( position === 'after'  )
+                    style.top = (itemEL.offsetTop + itemEL.offsetHeight) + 'px';
+                style.height = '0px';
+            }
+        }
+    },
+
+    _cancelHighligting: function () {
+        this._curDragoverEL = null;
+        this.$.highlightBorder.style.display = 'none';
+        this.$.insertLine.style.display = 'none';
     },
 });
 

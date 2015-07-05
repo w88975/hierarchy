@@ -14,6 +14,26 @@
     overflow-y: auto;
 }
 
+.highlight {
+    display: none;
+
+    position: absolute;
+    border: 2px solid #c7722c;
+    box-sizing: border-box;
+
+    pointer-events: none;
+}
+
+.insert {
+    display: none;
+
+    position: absolute;
+    border: 1px solid #0f0;
+    box-sizing: border-box;
+
+    pointer-events: none;
+}
+
 :host ::content hierarchy-item > #content > hierarchy-item {
     margin-left: 12px;
 }
