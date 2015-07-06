@@ -123,8 +123,8 @@ Editor.registerPanel( 'hierarchy.panel', {
         this.$.tree.waitForSceneReady();
     },
 
-    'scene:reply-query-hierarchy': function ( nodes ) {
-        this.$.tree._updateSceneGraph(nodes);
+    'scene:reply-query-hierarchy': function ( queryID, nodes ) {
+        this.$.tree._updateSceneGraph(queryID, nodes);
     },
 
     _connectState: function ( connectState ) {

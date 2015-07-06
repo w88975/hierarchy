@@ -57,7 +57,7 @@ Polymer({
 
         this.$.loader.hidden = true;
         this._setConnectState('connected');
-        Editor.sendToPanel('scene.panel', 'scene:query-hierarchy' );
+        this._queryHierarchyAfter(0);
     },
 
     disconnectScene: function () {
@@ -448,7 +448,23 @@ Polymer({
         }
     },
 
-    _updateSceneGraph: function ( nodes ) {
+    _queryHierarchyAfter: function ( timeout ) {
+        if ( this._queryID ) {
+            this.cancelAsync(this._queryID);
+            this._queryID = null;
+        }
+
+        var id = this.async( function () {
+            Editor.sendToPanel('scene.panel', 'scene:query-hierarchy', id );
+        }, timeout );
+        this._queryID = id;
+    },
+
+    _updateSceneGraph: function ( queryID, nodes ) {
+        if ( this._queryID !== queryID ) {
+            return;
+        }
+
         var diffResult = treeDiff(this._lastSnapshot, nodes);
         if (! diffResult.equal) {
             if (diffResult.cmds.length > 100) {
@@ -460,14 +476,7 @@ Polymer({
             this._lastSnapshot = nodes;
         }
 
-        if ( this._queryID ) {
-            this.cancelAsync(this._queryID);
-            this._queryID = null;
-        }
-        this._queryID = this.async( function () {
-            this._queryID = null;
-            Editor.sendToPanel('scene.panel', 'scene:query-hierarchy' );
-        }, 100 );
+        this._queryHierarchyAfter(100);
     },
 
     _build: function ( data, id2el ) {
