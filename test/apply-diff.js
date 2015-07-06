@@ -5,6 +5,7 @@ describe('<editor-hierarchy>', function() {
 
     before(function ( done ) {
         sinon.stub(Editor, 'sendToPanel').withArgs('scene.panel', 'scene:query-hierarchy');
+
         fixture('panel', function (el) {
             panel = el;
             tree = panel.$.tree;

@@ -518,5 +518,61 @@ describe('diff result', function() {
                 equal: false
             });
         });
+        it('should sort command if in children', function() {
+            var oldData = [
+                {
+                    id: 0,
+                    name: '0',
+                    children: null
+                },
+                {
+                    id: 1,
+                    name: '1',
+                    children: null
+                },
+                {
+                    id: 2,
+                    name: '2',
+                    children: null
+                }
+            ];
+            var newData = [
+                {
+                    id: 2,
+                    name: '2',
+                    children: null
+                },
+                {
+                    id: 0,
+                    name: '0',
+                    children: null
+                },
+                {
+                    id: 1,
+                    name: '1',
+                    children: null
+                }
+            ];
+            var diff = treeDiff(oldData, newData);
+            expect(diff).to.deep.equal({
+                cmds: [
+                    {
+                        op: 'remove',
+                        id: 2
+                    },
+                    {
+                        op: 'insert',
+                        parentId: null,
+                        index: 0,
+                        node: {
+                            id: 2,
+                            name: '2',
+                            children: null
+                        }
+                    },
+                ],
+                equal: false
+            });
+        });
     });
 });
