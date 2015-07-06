@@ -338,6 +338,11 @@ Polymer({
                 targetEL = null;
             }
 
+            // expand the parent
+            if ( targetEL ) {
+                targetEL.folded = false;
+            }
+
             // process drop
             if ( event.detail.dragType === 'node' ) {
                 Editor.sendToPanel('scene.panel',
