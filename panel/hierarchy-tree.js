@@ -472,7 +472,7 @@ Polymer({
 
         var diffResult = treeDiff(this._lastSnapshot, nodes);
         if (! diffResult.equal) {
-            if (diffResult.cmds.length > 100) {
+            if (true || diffResult.cmds.length > 100) {
                 this._rebuild(nodes);
             }
             else {
