@@ -449,7 +449,9 @@ Polymer({
                         this.setItemParent(el, newParent);
                     }
                     beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
-                    Polymer.dom(newParent).insertBefore(el, beforeNode);
+                    if (beforeNode && beforeNode !== el) {
+                        Polymer.dom(newParent).insertBefore(el, beforeNode);
+                    }
                     break;
 
                 case 'insert':
@@ -458,7 +460,9 @@ Polymer({
                     newParent = cmd.parentId !== null ? id2el[cmd.parentId] : this;
                     this.addItem( newParent, newEL, node.name, node.id );
                     beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
-                    Polymer.dom(newParent).insertBefore(newEL, beforeNode);
+                    if (beforeNode && beforeNode !== newEL) {
+                        Polymer.dom(newParent).insertBefore(newEL, beforeNode);
+                    }
                     break;
 
                 default:
@@ -487,7 +491,7 @@ Polymer({
 
         var diffResult = treeDiff(this._lastSnapshot, nodes);
         if (! diffResult.equal) {
-            if (true || diffResult.cmds.length > 100) {
+            if (diffResult.cmds.length > 100) {
                 this._rebuild(nodes);
             }
             else {
