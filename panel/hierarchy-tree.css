@@ -34,6 +34,13 @@
     pointer-events: none;
 }
 
+#nameInput {
+    position: absolute;
+    left: 11px;
+    height: 18px;
+    width: calc(100% - 11px);
+}
+
 :host ::content hierarchy-item > #content > hierarchy-item {
     margin-left: 12px;
 }

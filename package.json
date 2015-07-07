@@ -29,7 +29,9 @@
           "shift+up": "shiftSelectPrev",
           "shift+down": "shiftSelectNext",
           "left": "foldCurrent",
-          "right": "foldupCurrent"
+          "right": "foldupCurrent",
+          "enter": "renameCurrentSelected",
+          "f2": "renameCurrentSelected"
         }
       },
       "messages": [

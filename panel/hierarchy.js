@@ -35,6 +35,17 @@ Editor.registerPanel( 'hierarchy.panel', {
         this.$.tree.selectNext(true);
     },
 
+    renameCurrentSelected: function ( event ) {
+        if ( event ) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        if ( this.$.tree._activeElement ) {
+            this.$.tree.rename(this.$.tree._activeElement);
+        }
+    },
+
     // TODO: make it better
     shiftSelectPrev: function ( event ) {
         if ( event ) {

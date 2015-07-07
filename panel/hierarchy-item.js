@@ -115,7 +115,7 @@ Editor.registerWidget( 'hierarchy-item', {
             toggle = true;
         }
 
-        this.fire('selecting', {
+        this.fire('item-selecting', {
             toggle: toggle,
             shift: shift,
         });
@@ -137,7 +137,7 @@ Editor.registerWidget( 'hierarchy-item', {
             toggle = true;
         }
 
-        this.fire('select', {
+        this.fire('item-select', {
             toggle: toggle,
             shift: shift,
         });

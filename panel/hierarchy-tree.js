@@ -14,8 +14,6 @@ Polymer({
     listeners: {
         'focus': '_onFocus',
         'blur': '_onBlur',
-        'selecting': '_onSelecting',
-        'select': '_onSelect',
         'mousedown': '_onMouseDown',
         'dragstart': '_onDragStart',
         'dragend': '_onDragEnd',
@@ -23,6 +21,8 @@ Polymer({
         'drop-area-enter': '_onDropAreaEnter',
         'drop-area-leave': '_onDropAreaLeave',
         'drop-area-accept': '_onDropAreaAccept',
+        'item-selecting': '_onItemSelecting',
+        'item-select': '_onItemSelect',
     },
 
     properties: {
@@ -44,6 +44,21 @@ Polymer({
         this._initDroppable(this);
 
         this.waitForSceneReady();
+    },
+
+    rename: function ( element ) {
+        var treeBCR = this.getBoundingClientRect();
+        var elBCR = element.getBoundingClientRect();
+        var offsetTop = elBCR.top - treeBCR.top - 1;
+        this.$.nameInput.style.top = (this.$.content.scrollTop + offsetTop) + 'px';
+
+        this.$.nameInput.hidden = false;
+        this.$.nameInput._renamingEL = element;
+        this.$.nameInput.value = element.name;
+        this.$.nameInput.focus();
+        window.requestAnimationFrame( function () {
+            this.$.nameInput.select();
+        }.bind(this));
     },
 
     waitForSceneReady: function () {
@@ -118,7 +133,7 @@ Polymer({
 
     // events
 
-    _onSelecting: function ( event ) {
+    _onItemSelecting: function ( event ) {
         event.stopPropagation();
 
         var targetEL = event.target;
@@ -164,7 +179,7 @@ Polymer({
         }
     },
 
-    _onSelect: function ( event ) {
+    _onItemSelect: function ( event ) {
         event.stopPropagation();
 
         if ( event.detail.shift ) {
