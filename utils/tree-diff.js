@@ -8,7 +8,9 @@
 // - https://github.com/Matt-Esch/virtual-dom
 
 // assert: lastItem.id === newItem.id
-function compareItemProps (cmds, lastItem, newItem) {
+function compareItemProps (context, lastItem, newItem) {
+    var cmds = context.cmds;
+
     // compare name
     if (lastItem.name !== newItem.name) {
         cmds.push({
@@ -23,15 +25,18 @@ function compareItemProps (cmds, lastItem, newItem) {
     var newChildren = newItem.children;
     if (lastChildren) {
         if (newChildren) {
-            compareChildren(cmds, lastChildren, newChildren, lastItem.id);
+            compareChildren(context, lastChildren, newChildren, lastItem.id);
         }
         else {
+            //var removedNodes = context.removedNodes;
             // remove all children
             for (i = 0, len = lastChildren.length; i < len; i++) {
+                var c = lastChildren[i];
                 cmds.push({
                     op: 'remove',
-                    id: lastChildren[i].id,
+                    id: c.id,
                 });
+                //removedNodes[c.id] = c;
             }
         }
     }
@@ -48,7 +53,9 @@ function compareItemProps (cmds, lastItem, newItem) {
 }
 
 // assert: lastChildren, newChildren non-nil
-function compareChildren ( cmds, lastChildren, newChildren, parentId ) {
+function compareChildren ( context, lastChildren, newChildren, parentId ) {
+    var cmds = context.cmds;
+    //var removedNodes = context.removedNodes;
     var endLast = lastChildren.length;
     var endNew = newChildren.length;
 
@@ -72,6 +79,7 @@ function compareChildren ( cmds, lastChildren, newChildren, parentId ) {
                 op: 'remove',
                 id: lastItem.id
             });
+            //removedNodes[lastItem.id] = lastItem;
             lastIndex++;
             continue;
         }
@@ -87,11 +95,11 @@ function compareChildren ( cmds, lastChildren, newChildren, parentId ) {
             if (sameItem && !lastItemChildren === !newItemChildren) {
                 if (lastItemChildren) {
                     // has children
-                    compareChildren(cmds, lastItemChildren, newItemChildren, lastItem.id);
+                    compareChildren(context, lastItemChildren, newItemChildren, lastItem.id);
                 }
             }
             else {
-                compareItemProps(cmds, lastItem, newItem);
+                compareItemProps(context, lastItem, newItem);
             }
             newIndex++;
             lastIndex++;
@@ -108,8 +116,8 @@ function compareChildren ( cmds, lastChildren, newChildren, parentId ) {
                         index: newIndex + 1,
                         parentId: parentId,
                     });
-                    compareItemProps(cmds, lastItem, newChildren[newIndex + 1]);
-                    compareItemProps(cmds, lastChildren[lastIndex + 1], newItem);
+                    compareItemProps(context, lastItem, newChildren[newIndex + 1]);
+                    compareItemProps(context, lastChildren[lastIndex + 1], newItem);
                     newIndex += 2;
                     lastIndex += 2;
                 }
@@ -131,68 +139,177 @@ function compareChildren ( cmds, lastChildren, newChildren, parentId ) {
                     op: 'remove',
                     id: lastItem.id,
                 });
+                //removedNodes[lastItem.id] = lastItem;
                 lastIndex++;
                 continue;
             }
 
             // else just replace node
+            //cmds.push({
+            //    op: 'replace',
+            //    id: lastItem.id,
+            //    index: newIndex,
+            //    parentId: parentId,
+            //    node: newChildren[newIndex]
+            //});
             cmds.push({
-                op: 'replace',
+                op: 'remove',
                 id: lastItem.id,
-                node: newChildren[newIndex]
             });
+            //if (newIndex + 1 === endNew) {
+            //    cmds.push({
+            //        op: 'append',
+            //        parentId: parentId,
+            //        node: newChildren[newIndex]
+            //    });
+            //}
+            //else {
+                cmds.push({
+                    op: 'insert',
+                    index: newIndex,
+                    parentId: parentId,
+                    node: newChildren[newIndex]
+                });
+            //}
+            //removedNodes[lastItem.id] = lastItem;
+
             lastIndex++;
             newIndex++;
         }
     }
 }
 
-// 如果同个ID的节点有 先添加再移除 的操作，则将移除操作提前，防止应用补丁时发生ID重复的问题
-function sortOperationsById (cmds) {
+// 将所有移除操作提前，防止 ID 重复
+function sortOperationsById (context) {
+    var cmds = context.cmds;
+
     var removingCmds = [];
-    var addingCmds = {};
+
     for (var i = 0, len = cmds.length; i < len; i++) {
         var cmd = cmds[i];
         switch (cmd.op) {
-            case 'append':
-            case 'insert':
-                addingCmds[cmd.node.id] = cmd;
-                break;
             case 'remove':
                 removingCmds.push(cmd);
+                cmds[i] = null;     // mark as erase
                 break;
+            //case 'replace':
+            //    removingCmds.push({
+            //        op: 'remove',
+            //        id: cmd.id
+            //    });
+            //    cmds[i] = {
+            //        op: 'insert',
+            //        index: cmd.index,
+            //        parentId: cmd.parentId,
+            //        node: cmd.node
+            //    };
+            //    break;
+        }
+    }
 
-            case 'replace':
-                removingCmds.push(cmd);
-                addingCmds[cmd.node.id] = cmd;
-                break;
-        }
-    }
-    for (var r = 0; r < removingCmds.length; r++) {
-        var rmCmd = removingCmds[r];
-        var addCmd = addingCmds[rmCmd.id];
-        if (addCmd) {
-            // TODO - 优化成 move
-            var addCmdIndex = cmds.indexOf(addCmd);
-            var rmCmdIndex = cmds.indexOf(rmCmd);
-            if (addCmdIndex < rmCmdIndex) {
-                cmds.splice(rmCmdIndex, 1);
-                cmds.splice(addCmdIndex, 0, rmCmd);
-            }
-        }
-    }
+    var addCmds = cmds.filter(function (cmd) {
+        return cmd;
+    });
+    context.cmds = removingCmds.concat(addCmds);
 }
+
+//// 如果同个ID的节点有 先添加再移除 的操作，则将移除操作提前，防止应用补丁时发生ID重复的问题
+//function sortOperationsById (context) {
+//    var cmds = context.cmds;
+//    var removedNodes = context.removedNodes;
+//
+//    var addingCmds = [];
+//    var removingCmds = {};
+//
+//    for (var i = 0, len = cmds.length; i < len; i++) {
+//        var cmd = cmds[i];
+//        switch (cmd.op) {
+//            case 'append':
+//            case 'insert':
+//                addingCmds.push(cmd);
+//                break;
+//            case 'remove':
+//                removingCmds[cmd.id] = cmd;
+//                break;
+//            case 'replace':
+//                removingCmds[cmd.id] = cmd;
+//                addingCmds.push(cmd);
+//                break;
+//        }
+//    }
+//
+//    // 递归所有增加的节点，判断是否是移除的，如果是的话需要重新排序
+//    function checkChildren (node, removedNodes) {
+//        // assert node.children.length > 0
+//        var children = node.children;
+//        for (var i = 0; i < children.length; i++) {
+//            var child = children[i];
+//            var rmCmd = removedNodes
+//            if (child.id in removedNodes) {
+//
+//            }
+//            nodes[] = child;
+//            flattening(child, nodes);
+//        }
+//    }
+//
+//    for (var r = 0; r < addingCmds.length; r++) {
+//        var addCmd = addingCmds[r];
+//        if (addCmd.node.children) {
+//            checkChildren(addCmd.node, removedNodes);
+//        }
+//        var rmCmd = removingCmds[addCmd.node.id];
+//        if (rmCmd) {
+//            // TODO - 优化成 move
+//            var addCmdIndex = cmds.indexOf(addCmd);
+//            var rmCmdIndex = cmds.indexOf(rmCmd);
+//            if (addCmdIndex < rmCmdIndex) {
+//                cmds.splice(rmCmdIndex, 1);
+//                cmds.splice(addCmdIndex, 0, rmCmd);
+//            }
+//        }
+//    }
+//}
+
+//// get all removed nodes recursively
+//function flatteningRemovedNodes (context) {
+//    function flattening (node, nodes) {
+//        // assert node.children.length > 0
+//        var children = node.children;
+//        for (var i = 0; i < children.length; i++) {
+//            var child = children[i];
+//            nodes[child.id] = child;
+//            flattening(child, nodes);
+//        }
+//    }
+//    var removedNodes = context.removedNodes;
+//    var rootIds = Object.keys(removedNodes);
+//    for (var i = 0; i < rootIds.length; i++) {
+//        var rootId = rootIds[i];
+//        var root = removedNodes[root];
+//        if (root.children) {
+//            flattening(root, removedNodes);
+//        }
+//    }
+//}
 
 // assert: newRoots non-nil and lastRoots writable
 function treeDiff ( lastRoots, newRoots ) {
     lastRoots = lastRoots || [];
 
-    var cmds = [];
-    compareChildren(cmds, lastRoots, newRoots, null);
-    sortOperationsById(cmds);
+    var context = {
+        cmds: [],
+        //removedNodes: {},   // 用来访问被父节点移除的子节点
+    };
+
+    compareChildren(context, lastRoots, newRoots, null);
+    //flatteningRemovedNodes(context);
+    sortOperationsById(context);
+
+    //console.dir(context.cmds);
 
     return {
-        cmds: cmds,
+        cmds: context.cmds,
         get equal () {
             return this.cmds.length === 0;
         }

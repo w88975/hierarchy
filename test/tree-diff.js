@@ -569,6 +569,221 @@ describe('diff result', function() {
                             name: '2',
                             children: null
                         }
+                    }
+                ],
+                equal: false
+            });
+        });
+
+        it('should sort command if in deep children', function() {
+            var oldData = [
+                {
+                    id: 0,
+                    name: '0',
+                    children: [
+                        {
+                            id: 1,
+                            name: '1',
+                            children: [
+                                {
+                                   id: 2,
+                                   name: '2',
+                                   children: null
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ];
+            var newData = [
+                {
+                    id: 0,
+                    name: '0',
+                    children: [
+                        {
+                            id: 2,
+                            name: '2',
+                            children: [
+                                {
+                                    id: 1,
+                                    name: '1',
+                                    children: null
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ];
+            var diff = treeDiff(oldData, newData);
+            expect(diff).to.deep.equal({
+                cmds: [
+                    {
+                        op: 'remove',
+                        id: 1
+                    },
+                    {
+                        op: 'insert',
+                        parentId: 0,
+                        index: 0,
+                        node: {
+                            id: 2,
+                            name: '2',
+                            children: [
+                                {
+                                    id: 1,
+                                    name: '1',
+                                    children: null
+                                }
+                            ]
+                        }
+                    }
+                ],
+                equal: false
+            });
+        });
+
+        it.skip('should use "append" if insert to the end', function() {
+            var oldData = [
+                {
+                    id: 0,
+                    name: '0',
+                    children: null,
+                },
+                {
+                    id: 1,
+                    name: '1',
+                    children: null,
+                },
+                {
+                    id: 2,
+                    name: '2',
+                    children: null,
+                },
+                {
+                    id: 3,
+                    name: '3',
+                    children: null,
+                }
+            ];
+            var newData = [
+                {
+                    id: 0,
+                    name: '0',
+                    children: [
+                        {
+                            id: 1,
+                            name: '1',
+                            children: null,
+                        },
+                        {
+                            id: 2,
+                            name: '2',
+                            children: null,
+                        },
+                    ]
+                },
+                {
+                    id: 3,
+                    name: '3',
+                    children: null,
+                }
+            ];
+            var diff = treeDiff(oldData, newData);
+            expect(diff).to.deep.equal({
+                cmds: [
+                    { op: 'remove', id: 1 },
+                    { op: 'remove', id: 2 },
+                    { op: 'remove', id: 3 },
+                    { op: 'append',
+                      parentId: 0,
+                      node: { id: 1, name: '1', children: null }
+                    },
+                    { op: 'append',
+                      parentId: 0,
+                      node: { id: 2, name: '2', children: null }
+                    },
+                    { op: 'append',
+                      parentId: null,
+                      node: { id: 3, name: '3', children: null }
+                    }
+                ],
+                equal: false
+            });
+        });
+
+        it.skip('should use "append" if insert at the end', function() {
+            var oldData = [
+                {
+                    id: 0,
+                    name: '0',
+                    children: null,
+                },
+                {
+                    id: 1,
+                    name: '1',
+                    children: null,
+                },
+                {
+                    id: 2,
+                    name: '2',
+                    children: null,
+                },
+                {
+                    id: 3,
+                    name: '3',
+                    children: null,
+                }
+            ];
+            var newData = [
+                {
+                    id: 2,
+                    name: '2',
+                    children: [
+                        {
+                            id: 0,
+                            name: '0',
+                            children: null,
+                        },
+                        {
+                            id: 1,
+                            name: '1',
+                            children: null,
+                        },
+                    ]
+                },
+                {
+                    id: 3,
+                    name: '3',
+                    children: null,
+                }
+            ];
+            var diff = treeDiff(oldData, newData);
+            expect(diff).to.deep.equal({
+                cmds: [
+                    { op: 'remove', id: 0 },
+                    { op: 'remove', id: 1 },
+                    { op: 'remove', id: 2 },
+                    { op: 'remove', id: 3 },
+                    { op: 'append',
+                        parentId: null,
+                        node: {
+                            id: 2, name: '2', children: [
+                                {
+                                    id: 0,
+                                    name: '0',
+                                    children: null,
+                                },
+                                {
+                                    id: 1,
+                                    name: '1',
+                                    children: null,
+                                },
+                            ]
+                        }
+                    },
+                    { op: 'append',
+                        parentId: null,
+                        node: { id: 3, name: '3', children: null }
                     },
                 ],
                 equal: false
