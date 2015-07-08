@@ -51,12 +51,15 @@ Polymer({
         var treeBCR = this.getBoundingClientRect();
         var elBCR = element.getBoundingClientRect();
         var offsetTop = elBCR.top - treeBCR.top - 1;
+        var offsetLeft = elBCR.left - treeBCR.left + 10 - 4;
         this.$.nameInput.style.top = (this.$.content.scrollTop + offsetTop) + 'px';
+        this.$.nameInput.style.left = offsetLeft + 'px';
+        this.$.nameInput.style.width = 'calc(100% - ' + offsetLeft + 'px)';
 
         this.$.nameInput.hidden = false;
-        this.$.nameInput._renamingEL = element;
         this.$.nameInput.value = element.name;
         this.$.nameInput.focus();
+        this.$.nameInput._renamingEL = element;
         window.requestAnimationFrame( function () {
             this.$.nameInput.select();
         }.bind(this));
@@ -380,6 +383,14 @@ Polymer({
 
     // rename events
 
+    _onRenameMouseDown: function ( event ) {
+        event.stopPropagation();
+    },
+
+    _onRenameKeyDown: function ( event ) {
+        event.stopPropagation();
+    },
+
     _onRenameValueChanged: function ( event ) {
         var targetEL = this.$.nameInput._renamingEL;
         if ( targetEL ) {
@@ -396,6 +407,10 @@ Polymer({
     },
 
     _onRenameFocusChanged: function ( event ) {
+        if ( !this.$.nameInput._renamingEL ) {
+            return;
+        }
+
         if ( !event.detail.value ) {
             this.$.nameInput._renamingEL = null;
             this.$.nameInput.hidden = true;

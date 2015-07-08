@@ -9,6 +9,8 @@
             <div id="highlightBorder" class="highlight"></div>
             <div id="insertLine" class="insert"></div>
             <editor-input id="nameInput" hidden
+                on-mousedown="_onRenameMouseDown"
+                on-keydown="_onRenameKeyDown"
                 on-value-changed="_onRenameValueChanged"
                 on-focused-changed="_onRenameFocusChanged"
             ></editor-input>
