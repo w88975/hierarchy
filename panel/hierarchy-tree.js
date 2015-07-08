@@ -40,6 +40,7 @@ Polymer({
     ready: function () {
         this._shiftStartElement = null;
         this._lastSnapshot = null;
+
         this._initFocusable(this);
         this._initDroppable(this);
 
@@ -377,6 +378,30 @@ Polymer({
         }
     },
 
+    // rename events
+
+    _onRenameValueChanged: function ( event ) {
+        var targetEL = this.$.nameInput._renamingEL;
+        if ( targetEL ) {
+            Editor.sendToPanel('scene.panel', 'scene:node-set-property',
+                               targetEL._userId,
+                               'name',
+                               this.$.nameInput.value,
+                               false
+                              );
+
+            this.$.nameInput._renamingEL = null;
+            this.$.nameInput.hidden = true;
+        }
+    },
+
+    _onRenameFocusChanged: function ( event ) {
+        if ( !event.detail.value ) {
+            this.$.nameInput._renamingEL = null;
+            this.$.nameInput.hidden = true;
+        }
+    },
+
     // private methods
 
     _rebuild: function (nodes) {
@@ -593,6 +618,7 @@ Polymer({
         this.$.highlightBorder.style.display = 'none';
         this.$.insertLine.style.display = 'none';
     },
+
 });
 
 })();
