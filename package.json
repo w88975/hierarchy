@@ -39,6 +39,8 @@
         "selection:unselected",
         "selection:activated",
         "selection:deactivated",
+        "selection:hoverin",
+        "selection:hoverout",
         "scene:ready",
         "scene:reloading",
         "scene:reply-query-hierarchy"

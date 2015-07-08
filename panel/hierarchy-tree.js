@@ -65,6 +65,18 @@ Polymer({
         }.bind(this));
     },
 
+    hoverinItemById: function ( id ) {
+        var itemEL = this._id2el[id];
+        if ( itemEL )
+            itemEL.hovering = true;
+    },
+
+    hoveroutItemById: function ( id ) {
+        var itemEL = this._id2el[id];
+        if ( itemEL )
+            itemEL.hovering = false;
+    },
+
     waitForSceneReady: function () {
         this._setConnectState('connecting');
         this.$.loader.hidden = false;
@@ -533,6 +545,7 @@ Polymer({
         if (! diffResult.equal) {
             if (diffResult.cmds.length > 100) {
                 this._rebuild(nodes);
+                console.log('rebuild');
             }
             else {
                 this._applyCmds(diffResult.cmds);

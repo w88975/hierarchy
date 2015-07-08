@@ -126,6 +126,20 @@ Editor.registerPanel( 'hierarchy.panel', {
         this.$.tree.deactiveItemById(id);
     },
 
+    'selection:hoverin': function ( type, id ) {
+        if ( type !== 'node' )
+            return;
+
+        this.$.tree.hoverinItemById(id);
+    },
+
+    'selection:hoverout': function ( type, id ) {
+        if ( type !== 'node' )
+            return;
+
+        this.$.tree.hoveroutItemById(id);
+    },
+
     'scene:ready': function () {
         this.$.tree.connectScene();
     },

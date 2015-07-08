@@ -43,19 +43,7 @@ Editor.registerWidget( 'hierarchy-item', {
             value: '',
         },
 
-        conflicted: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
-
-        highlighted: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
-
-        invalid: {
+        hovering: {
             type: Boolean,
             value: false,
             reflectToAttribute: true
@@ -174,7 +162,17 @@ Editor.registerWidget( 'hierarchy-item', {
         event.stopPropagation();
     },
 
-    // TODO: insertItem
+    _onMouseEnter: function ( event ) {
+        event.stopPropagation();
+
+        Editor.Selection.hover( 'node', this._userId );
+    },
+
+    _onMouseLeave: function ( event ) {
+        event.stopPropagation();
+
+        Editor.Selection.hover( 'node', null);
+    },
 });
 
 })();
