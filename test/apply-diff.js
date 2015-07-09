@@ -55,7 +55,69 @@ describe('<editor-hierarchy>', function() {
         expect(Polymer.dom(children[0]).children.length).to.be.equal(0);
     });
 
-    it('should replace recursively', function () {
+    it('could move tree item downwards', function () {
+        setTree([
+            {
+                id: 0,
+                name: '0',
+                children: null
+            },
+            {
+                id: 1,
+                name: '1',
+                children: null
+            }
+        ]);
+        tree._applyCmds([
+            {
+                op: 'move',
+                id: 0,
+                index: 1,
+                parentId: null
+            }
+        ]);
+
+        var roots = Polymer.dom(tree).children;
+        expect(roots.length).to.be.equal(2);
+        var n0 = roots[0];
+        var n1 = roots[1];
+
+        expect(n0.name).to.be.equal('1');
+        expect(n1.name).to.be.equal('0');
+    });
+
+    it('could move tree item upwards', function () {
+        setTree([
+            {
+                id: 0,
+                name: '0',
+                children: null
+            },
+            {
+                id: 1,
+                name: '1',
+                children: null
+            }
+        ]);
+        tree._applyCmds([
+            {
+                op: 'move',
+                id: 1,
+                index: 0,
+                parentId: null
+            }
+        ]);
+
+        var roots = Polymer.dom(tree).children;
+        expect(roots.length).to.be.equal(2);
+        var n0 = roots[0];
+        var n1 = roots[1];
+
+        expect(n0.name).to.be.equal('1');
+        expect(n1.name).to.be.equal('0');
+    });
+
+    it.skip('should replace recursively', function () {
         setTree([
             {
                 id: 0,

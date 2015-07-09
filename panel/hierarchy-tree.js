@@ -471,24 +471,24 @@ Polymer({
                     this.removeItemById(cmd.id);
                     break;
 
-                case 'replace':
-                    el = id2el[cmd.id];
-                    node = cmd.node;
-                    var isLeaf = Polymer.dom(el).childNodes === 0 && !node.children;
-                    if (isLeaf) {
-                        el.name = node.name;
-
-                        delete id2el[cmd.id];
-                        el._userId = node.id;
-                        id2el[node.id] = el;
-                    }
-                    else {
-                        newParent = Polymer.dom(el).parentNode;
-                        this.removeItem(el);
-                        newEL = this._newEntryRecursively(node, id2el);
-                        this.addItem( newParent, newEL, node.name, node.id );
-                    }
-                    break;
+                //case 'replace':
+                //    el = id2el[cmd.id];
+                //    node = cmd.node;
+                //    var isLeaf = Polymer.dom(el).childNodes === 0 && !node.children;
+                //    if (isLeaf) {
+                //        el.name = node.name;
+                //
+                //        delete id2el[cmd.id];
+                //        el._userId = node.id;
+                //        id2el[node.id] = el;
+                //    }
+                //    else {
+                //        newParent = Polymer.dom(el).parentNode;
+                //        this.removeItem(el);
+                //        newEL = this._newEntryRecursively(node, id2el);
+                //        this.addItem( newParent, newEL, node.name, node.id );
+                //    }
+                //    break;
 
                 case 'rename':
                     this.renameItemById(cmd.id, cmd.name);
@@ -497,10 +497,22 @@ Polymer({
                 case 'move':
                     el = id2el[cmd.id];
                     newParent = cmd.parentId !== null ? id2el[cmd.parentId] : this;
+                    var siblings;
                     if (newParent !== Polymer.dom(el).parentNode) {
                         this.setItemParent(el, newParent);
+                        siblings = Polymer.dom(newParent).childNodes;
                     }
-                    beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
+                    else {
+                        siblings = Polymer.dom(newParent).childNodes;
+                        if (siblings.indexOf(el) < cmd.index) {
+                            cmd.index += 1;
+                        }
+                        if (cmd.index >= siblings.length - 1) {
+                            Polymer.dom(newParent).appendChild(el);
+                            break;
+                        }
+                    }
+                    beforeNode = siblings[cmd.index];
                     if (beforeNode && beforeNode !== el) {
                         Polymer.dom(newParent).insertBefore(el, beforeNode);
                     }
