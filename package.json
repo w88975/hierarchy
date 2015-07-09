@@ -31,7 +31,9 @@
           "left": "foldCurrent",
           "right": "foldupCurrent",
           "enter": "renameCurrentSelected",
-          "f2": "renameCurrentSelected"
+          "f2": "renameCurrentSelected",
+          "command+backspace": "deleteCurrentSelected",
+          "ctrl+backspace": "deleteCurrentSelected"
         }
       },
       "messages": [
