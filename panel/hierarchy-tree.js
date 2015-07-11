@@ -335,75 +335,77 @@ Polymer({
         this._curInsertParentEL = null;
 
         //
-        if ( event.detail.dragItems.length > 0 ) {
-            // get next sibliing id
-            var hoverEL = event.detail.dropTarget;
-            var targetEL = null;
-            var nextSiblingId = null;
-            var bcr = this.getBoundingClientRect();
-            var offsetY = event.detail.clientY - bcr.top + this.$.content.scrollTop;
+        if ( event.detail.dragItems.length === 0 ) {
+            return;
+        }
 
-            var thisDOM = Polymer.dom(this);
-            var hoverDOM = Polymer.dom(hoverEL);
+        // get next sibliing id
+        var hoverEL = event.detail.dropTarget;
+        var targetEL = null;
+        var nextSiblingId = null;
+        var bcr = this.getBoundingClientRect();
+        var offsetY = event.detail.clientY - bcr.top + this.$.content.scrollTop;
 
-            if ( hoverEL === this ) {
-                targetEL = null;
-                if ( thisDOM.firstElementChild ) {
-                    if ( offsetY <= thisDOM.firstElementChild.offsetTop ) {
-                        nextSiblingId = thisDOM.firstElementChild._userId;
-                    }
+        var thisDOM = Polymer.dom(this);
+        var hoverDOM = Polymer.dom(hoverEL);
+
+        if ( hoverEL === this ) {
+            targetEL = null;
+            if ( thisDOM.firstElementChild ) {
+                if ( offsetY <= thisDOM.firstElementChild.offsetTop ) {
+                    nextSiblingId = thisDOM.firstElementChild._userId;
                 }
             }
-            else {
-                if ( offsetY <= (hoverEL.offsetTop + hoverEL.offsetHeight * 0.3) ) {
-                    nextSiblingId = hoverEL._userId;
-                    targetEL = hoverDOM.parentNode;
-                }
-                else if ( offsetY >= (hoverEL.offsetTop + hoverEL.offsetHeight * 0.7) ) {
-                    if ( hoverDOM.nextElementSibling ) {
-                        nextSiblingId = hoverDOM.nextElementSibling._userId;
-                    }
-                    else {
-                        nextSiblingId = null;
-                    }
-                    targetEL = hoverDOM.parentNode;
+        }
+        else {
+            if ( offsetY <= (hoverEL.offsetTop + hoverEL.offsetHeight * 0.3) ) {
+                nextSiblingId = hoverEL._userId;
+                targetEL = hoverDOM.parentNode;
+            }
+            else if ( offsetY >= (hoverEL.offsetTop + hoverEL.offsetHeight * 0.7) ) {
+                if ( hoverDOM.nextElementSibling ) {
+                    nextSiblingId = hoverDOM.nextElementSibling._userId;
                 }
                 else {
                     nextSiblingId = null;
-                    targetEL = hoverEL;
-                    if ( hoverDOM.firstElementChild ) {
-                        nextSiblingId = hoverDOM.firstElementChild._userId;
-                    }
+                }
+                targetEL = hoverDOM.parentNode;
+            }
+            else {
+                nextSiblingId = null;
+                targetEL = hoverEL;
+                if ( hoverDOM.firstElementChild ) {
+                    nextSiblingId = hoverDOM.firstElementChild._userId;
                 }
             }
+        }
 
-            // if target is root, set it to null
-            if ( targetEL === this ) {
-                targetEL = null;
-            }
+        // if target is root, set it to null
+        if ( targetEL === this ) {
+            targetEL = null;
+        }
 
-            // expand the parent
-            if ( targetEL ) {
-                targetEL.folded = false;
-            }
+        // expand the parent
+        if ( targetEL ) {
+            targetEL.folded = false;
+        }
 
-            // process drop
-            if ( event.detail.dragType === 'node' ) {
-                this._sortDragItems(event.detail.dragItems);
-                Editor.sendToPanel('scene.panel',
-                                   'scene:move-nodes',
-                                   event.detail.dragItems,
-                                   targetEL ? targetEL._userId : null,
-                                   nextSiblingId
-                                  );
-            }
-            else if ( event.detail.dragType === 'asset' ) {
-                Editor.sendToPanel('scene.panel',
-                                   'scene:create-assets',
-                                   event.detail.dragItems,
-                                   targetEL ? targetEL._userId : null
-                                  );
-            }
+        // process drop
+        if ( event.detail.dragType === 'node' ) {
+            this._sortDragItems(event.detail.dragItems);
+            Editor.sendToPanel('scene.panel',
+                               'scene:move-nodes',
+                               event.detail.dragItems,
+                               targetEL ? targetEL._userId : null,
+                               nextSiblingId
+                              );
+        }
+        else if ( event.detail.dragType === 'asset' ) {
+            Editor.sendToPanel('scene.panel',
+                               'scene:create-assets',
+                               event.detail.dragItems,
+                               targetEL ? targetEL._userId : null
+                              );
         }
     },
 
