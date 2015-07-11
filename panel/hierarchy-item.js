@@ -48,6 +48,12 @@ Editor.registerWidget( 'hierarchy-item', {
             value: false,
             reflectToAttribute: true
         },
+
+        highlighted: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
     },
 
     listeners: {

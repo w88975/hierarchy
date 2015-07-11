@@ -240,7 +240,7 @@ Polymer({
 
         Editor.Selection.cancel();
         this._cancelHighligting();
-        this._curDragoverEL = null;
+        this._curInsertParentEL = null;
     },
 
     _onDragOver: function ( event ) {
@@ -260,41 +260,46 @@ Polymer({
             var bcr = this.getBoundingClientRect();
             var offsetY = event.clientY - bcr.top + this.$.content.scrollTop;
 
-            var targetEL = Polymer.dom(event).localTarget;
+            var dragoverEL = Polymer.dom(event).localTarget;
+            var insertParentEL = dragoverEL;
             var thisDOM = Polymer.dom(this);
 
             //
-            if ( thisDOM.children.length > 0 ) {
-                if ( targetEL !== this._curDragoverEL ) {
-                    if ( targetEL === this ) {
-                        if ( offsetY <= thisDOM.firstElementChild.offsetTop ) {
-                            targetEL = thisDOM.firstElementChild;
-                        }
-                        else {
-                            targetEL = thisDOM.lastElementChild;
-                        }
+            if ( thisDOM.children.length === 0 ) {
+                this._highlightInsert();
+            }
+            else {
+                if ( dragoverEL === this ) {
+                    if ( offsetY <= thisDOM.firstElementChild.offsetTop ) {
+                        dragoverEL = thisDOM.firstElementChild;
                     }
-                    this._curDragoverEL = targetEL;
+                    else {
+                        dragoverEL = thisDOM.lastElementChild;
+                    }
                 }
 
                 // highlight insertion
-                if ( offsetY <= (targetEL.offsetTop + targetEL.offsetHeight * 0.3) )
+                if ( offsetY <= (dragoverEL.offsetTop + dragoverEL.offsetHeight * 0.3) )
                     position = 'before';
-                else if ( offsetY >= (targetEL.offsetTop + targetEL.offsetHeight * 0.7) )
+                else if ( offsetY >= (dragoverEL.offsetTop + dragoverEL.offsetHeight * 0.7) )
                     position = 'after';
                 else
                     position = 'inside';
 
                 if ( position === 'inside' ) {
-                    this._highlightBorder( targetEL );
+                    insertParentEL = dragoverEL;
+                } else {
+                    insertParentEL = Polymer.dom(dragoverEL).parentNode;
                 }
-                else {
-                    this._highlightBorder( Polymer.dom(targetEL).parentNode );
+
+                //
+                if ( insertParentEL !== this._curInsertParentEL ) {
+                    this._cancelHighligting();
+                    this._curInsertParentEL = insertParentEL;
+
+                    this._highlightBorder( insertParentEL );
                 }
-                this._highlightInsert( targetEL, position );
-            }
-            else {
-                this._highlightInsert();
+                this._highlightInsert( dragoverEL, insertParentEL, position );
             }
 
             //
@@ -319,7 +324,7 @@ Polymer({
         event.stopPropagation();
 
         this._cancelHighligting();
-        this._curDragoverEL = null;
+        this._curInsertParentEL = null;
     },
 
     _onDropAreaAccept: function ( event ) {
@@ -327,7 +332,7 @@ Polymer({
 
         Editor.Selection.cancel();
         this._cancelHighligting();
-        this._curDragoverEL = null;
+        this._curInsertParentEL = null;
 
         //
         if ( event.detail.dragItems.length > 0 ) {
@@ -624,47 +629,52 @@ Polymer({
             style.top = (itemEL.offsetTop-1) + 'px';
             style.width = (itemEL.offsetWidth+4) + 'px';
             style.height = (itemEL.offsetHeight+3) + 'px';
+
+            itemEL.highlighted = true;
         }
         else {
             this.$.highlightBorder.style.display = 'none';
         }
     },
 
-    _highlightInsert: function ( itemEL, position ) {
+    _highlightInsert: function ( itemEL, parentEL, position ) {
         var style = this.$.insertLine.style;
 
-        if ( itemEL ) {
-            if ( position === 'inside' ) {
-                var itemDOM = Polymer.dom(itemEL);
-                if ( !itemEL.folded && itemDOM.firstElementChild ) {
-                    style.display = 'block';
-                    style.top = (itemDOM.firstElementChild.offsetTop-1) + 'px';
-                    style.left = (itemDOM.firstElementChild.offsetLeft-2) + 'px';
-                    style.width = (itemDOM.firstElementChild.offsetWidth+4) + 'px';
-                    style.height = '0px';
-                }
-                else {
-                    style.display = 'none';
-                }
-            }
-            else {
-                style.display = 'block';
-
-                style.left = (itemEL.offsetLeft-2) + 'px';
-                style.width = (itemEL.offsetWidth+4) + 'px';
-
-                if ( position === 'before' )
-                    style.top = itemEL.offsetTop + 'px';
-                else if ( position === 'after'  )
-                    style.top = (itemEL.offsetTop + itemEL.offsetHeight) + 'px';
-                style.height = '0px';
-            }
-        }
-        else {
+        // insert at root
+        if ( !itemEL ) {
             style.display = 'block';
             style.left = (this.offsetLeft-2) + 'px';
             style.width = (this.offsetWidth+4) + 'px';
             style.top = '0px';
+            style.height = '0px';
+
+            return;
+        }
+
+        //
+        if ( position === 'inside' ) {
+            var itemDOM = Polymer.dom(itemEL);
+            if ( !itemEL.folded && itemDOM.firstElementChild ) {
+                style.display = 'block';
+                style.top = itemDOM.firstElementChild.offsetTop + 'px';
+                style.left = itemEL.offsetLeft + 'px';
+                style.width = itemEL.offsetWidth + 'px';
+                style.height = '0px';
+            }
+            else {
+                style.display = 'none';
+            }
+        }
+        else {
+            style.display = 'block';
+
+            style.left = parentEL.offsetLeft + 'px';
+            if ( position === 'before' )
+                style.top = itemEL.offsetTop + 'px';
+            else if ( position === 'after'  )
+                style.top = (itemEL.offsetTop + itemEL.offsetHeight) + 'px';
+
+            style.width = parentEL.offsetWidth + 'px';
             style.height = '0px';
         }
     },
@@ -672,6 +682,10 @@ Polymer({
     _cancelHighligting: function () {
         this.$.highlightBorder.style.display = 'none';
         this.$.insertLine.style.display = 'none';
+
+        if (this._curInsertParentEL) {
+            this._curInsertParentEL.highlighted = false;
+        }
     },
 
     _sortDragItems: function (ids) {

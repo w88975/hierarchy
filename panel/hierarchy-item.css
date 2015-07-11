@@ -1,3 +1,12 @@
-:host[hovering] > #header #name {
+:host[hovering] > #header > .wrapper {
     color: #f90;
+}
+
+:host[highlighted] > #header {
+    background-color: #c7722c;
+}
+
+:host[highlighted] > #header > .wrapper {
+    color: black;
+    font-weight: bold;
 }
