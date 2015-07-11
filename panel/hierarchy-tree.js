@@ -237,8 +237,10 @@ Polymer({
 
     _onDragEnd: function ( event ) {
         EditorUI.DragDrop.end();
+
         Editor.Selection.cancel();
         this._cancelHighligting();
+        this._curDragoverEL = null;
     },
 
     _onDragOver: function ( event ) {
@@ -291,6 +293,9 @@ Polymer({
                 }
                 this._highlightInsert( targetEL, position );
             }
+            else {
+                this._highlightInsert();
+            }
 
             //
             EditorUI.DragDrop.allowDrop(event.dataTransfer, true);
@@ -312,14 +317,17 @@ Polymer({
 
     _onDropAreaLeave: function ( event ) {
         event.stopPropagation();
+
         this._cancelHighligting();
+        this._curDragoverEL = null;
     },
 
     _onDropAreaAccept: function ( event ) {
         event.stopPropagation();
 
-        this._cancelHighligting();
         Editor.Selection.cancel();
+        this._cancelHighligting();
+        this._curDragoverEL = null;
 
         //
         if ( event.detail.dragItems.length > 0 ) {
@@ -622,9 +630,9 @@ Polymer({
     },
 
     _highlightInsert: function ( itemEL, position ) {
-        if ( itemEL ) {
-            var style = this.$.insertLine.style;
+        var style = this.$.insertLine.style;
 
+        if ( itemEL ) {
             if ( position === 'inside' ) {
                 var itemDOM = Polymer.dom(itemEL);
                 if ( !itemEL.folded && itemDOM.firstElementChild ) {
@@ -651,10 +659,16 @@ Polymer({
                 style.height = '0px';
             }
         }
+        else {
+            style.display = 'block';
+            style.left = (this.offsetLeft-2) + 'px';
+            style.width = (this.offsetWidth+4) + 'px';
+            style.top = '0px';
+            style.height = '0px';
+        }
     },
 
     _cancelHighligting: function () {
-        this._curDragoverEL = null;
         this.$.highlightBorder.style.display = 'none';
         this.$.insertLine.style.display = 'none';
     },
