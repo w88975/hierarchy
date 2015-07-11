@@ -384,6 +384,7 @@ Polymer({
 
             // process drop
             if ( event.detail.dragType === 'node' ) {
+                this._sortDragItems(event.detail.dragItems);
                 Editor.sendToPanel('scene.panel',
                                    'scene:move-nodes',
                                    event.detail.dragItems,
@@ -672,6 +673,26 @@ Polymer({
         this.$.highlightBorder.style.display = 'none';
         this.$.insertLine.style.display = 'none';
     },
+
+    _sortDragItems: function (ids) {
+        var id2el = this._id2el;
+        ids.sort(function (lhs, rhs) {
+            var itemA = id2el[lhs];
+            var itemB = id2el[rhs];
+            var indexA, indexB;
+            if (itemA.parentNode === itemB.parentNode) {
+                var siblings = itemA.parentNode.childNodes;
+                indexA = Array.prototype.indexOf.call(siblings, itemA);
+                indexB = Array.prototype.indexOf.call(siblings, itemB);
+                return indexB - indexA;
+            }
+            else {
+
+            }
+        });
+        //console.log(ids);
+    }
+
 
 });
 
