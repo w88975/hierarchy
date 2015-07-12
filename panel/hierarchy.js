@@ -1,7 +1,5 @@
 (function () {
 
-var BuildMenu = Editor.require('packages://hierarchy/utils/build-menu');
-
 Editor.registerPanel( 'hierarchy.panel', {
     is: 'editor-hierarchy',
 
@@ -10,7 +8,6 @@ Editor.registerPanel( 'hierarchy.panel', {
 
     ready: function () {
         this.connectState = 'connecting';
-        this.createMenu = null;
     },
 
     focusOnSearch: function ( event ) {
@@ -155,9 +152,8 @@ Editor.registerPanel( 'hierarchy.panel', {
         this.$.tree.hoveroutItemById(id);
     },
 
-    'scene:ready': function (menuPaths) {
+    'scene:ready': function () {
         this.$.tree.connectScene();
-        this.createMenu = BuildMenu(menuPaths);
     },
 
     'scene:reloading': function () {
@@ -184,9 +180,7 @@ Editor.registerPanel( 'hierarchy.panel', {
 
     _onCreateClick: function ( event ) {
         var rect = this.$.create.getBoundingClientRect();
-        Editor.Menu.popup( rect.left + 5, rect.bottom + 5, this.createMenu || [
-            { label: '(None)', enabled: false },
-        ]);
+        Editor.sendToCore('hierarchy:popup-create-menu', rect.left + 5, rect.bottom + 5, Editor.requireIpcEvent);
     }
 });
 

@@ -7,9 +7,9 @@ function findMenu (menuArray, label) {
     return null;
 }
 
-function buildMenu (menuPaths) {
+function buildMenu (menuData) {
     var template = [];
-    var items = menuPaths;
+    var items = Object.keys(menuData);
     // enumerate components
     for (var i = 0; i < items.length; i++) {
         var item = items[i];
@@ -74,7 +74,12 @@ function buildMenu (menuPaths) {
         }
         if (newMenu && !newMenu.submenu) {
             newMenu.message = 'scene:create-new-node';
-            newMenu.params = [item];
+            newMenu.params = [
+                {
+                    menuPath: item,
+                    id: menuData[item]
+                }
+            ];
             newMenu.panel = 'scene.panel';
         }
         else {
