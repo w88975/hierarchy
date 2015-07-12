@@ -9,11 +9,12 @@ function findMenu (menuArray, label) {
 
 function buildMenu (menuData) {
     var template = [];
-    var items = Object.keys(menuData);
+    var items = menuData;
     // enumerate components
     for (var i = 0; i < items.length; i++) {
         var item = items[i];
-        var subPaths = item.split('/');
+        var menuPath = item.menuPath;
+        var subPaths = menuPath.split('/');
 
         var prio = 0;
         // enumerate menu path
@@ -35,7 +36,7 @@ function buildMenu (menuData) {
                         continue;
                     }
                     else {
-                        Editor.error('Registered menu path conflict:', item);
+                        Editor.error('Registered menu path conflict:', menuPath);
                         break;
                     }
                 }
@@ -74,16 +75,11 @@ function buildMenu (menuData) {
         }
         if (newMenu && !newMenu.submenu) {
             newMenu.message = 'scene:create-new-node';
-            newMenu.params = [
-                {
-                    menuPath: item,
-                    id: menuData[item]
-                }
-            ];
+            newMenu.params = [ item ];
             newMenu.panel = 'scene.panel';
         }
         else {
-            Editor.error('Invalid registered menu path: ' + item);
+            Editor.error('Invalid registered menu path: ' + menuPath);
         }
     }
     return template;
