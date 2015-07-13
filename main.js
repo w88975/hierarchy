@@ -14,8 +14,9 @@ module.exports = {
 
     'hierarchy:popup-create-menu': function (event, x, y) {
         var template;
-        if (Editor.nodeCreateMenus) {
-            template = BuildMenu(Editor.nodeCreateMenus);
+        var menuData = Editor.menus['create-node'];
+        if (menuData) {
+            template = BuildMenu(menuData);
         }
         else {
             template = [
