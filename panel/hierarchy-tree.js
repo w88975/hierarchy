@@ -521,9 +521,9 @@ Polymer({
                     else {
                         siblings = Polymer.dom(newParent).childNodes;
                         if (siblings.indexOf(el) < cmd.index) {
-                            cmd.index += 1;
+                            cmd.index += 1;     // before next one
                         }
-                        if (cmd.index >= siblings.length - 1) {
+                        if (cmd.index > siblings.length - 1) {
                             Polymer.dom(newParent).appendChild(el);
                             break;
                         }

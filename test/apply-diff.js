@@ -55,7 +55,7 @@ describe('<editor-hierarchy>', function() {
         expect(Polymer.dom(children[0]).children.length).to.be.equal(0);
     });
 
-    it('could move tree item downwards', function () {
+    it('could move tree item downwards (total: 2)', function () {
         setTree([
             {
                 id: 0,
@@ -84,6 +84,44 @@ describe('<editor-hierarchy>', function() {
 
         expect(n0.name).to.be.equal('1');
         expect(n1.name).to.be.equal('0');
+    });
+
+    it('could move tree item downwards (total: 3)', function () {
+        setTree([
+            {
+                id: 0,
+                name: '0',
+                children: null
+            },
+            {
+                id: 1,
+                name: '1',
+                children: null
+            },
+            {
+                id: 2,
+                name: '2',
+                children: null
+            }
+        ]);
+        tree._applyCmds([
+            {
+                op: 'move',
+                id: 0,
+                index: 1,
+                parentId: null
+            }
+        ]);
+
+        var roots = Polymer.dom(tree).children;
+        expect(roots.length).to.be.equal(3);
+        var n0 = roots[0];
+        var n1 = roots[1];
+        var n2 = roots[2];
+
+        expect(n0.name).to.be.equal('1');
+        expect(n1.name).to.be.equal('0');
+        expect(n2.name).to.be.equal('2');
     });
 
     it('could move tree item upwards', function () {
