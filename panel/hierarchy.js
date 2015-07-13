@@ -180,7 +180,7 @@ Editor.registerPanel( 'hierarchy.panel', {
 
     _onCreateClick: function ( event ) {
         var rect = this.$.create.getBoundingClientRect();
-        Editor.sendToCore('hierarchy:popup-create-menu', rect.left + 5, rect.bottom + 5, Editor.requireIpcEvent);
+        Editor.sendToCore('hierarchy:popup-create-menu', rect.left, rect.bottom + 5, Editor.requireIpcEvent);
     }
 });
 
