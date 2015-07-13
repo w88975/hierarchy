@@ -392,7 +392,7 @@ Polymer({
 
         // process drop
         if ( event.detail.dragType === 'node' ) {
-            this._sortDragItems(event.detail.dragItems);
+            this._sortDraggingItems(event.detail.dragItems);
             Editor.sendToPanel('scene.panel',
                                'scene:move-nodes',
                                event.detail.dragItems,
@@ -690,14 +690,19 @@ Polymer({
         }
     },
 
-    _sortDragItems: function (ids) {
+    _sortDraggingItems: function (ids) {
+        //console.log('before', ids);
         var id2el = this._id2el;
         ids.sort(function (lhs, rhs) {
             var itemA = id2el[lhs];
             var itemB = id2el[rhs];
+            var itemADOM = Polymer.dom(itemA);
+            var itemBDOM = Polymer.dom(itemB);
+            var itemAParentDOM = Polymer.dom(itemADOM.parentNode);
+            var itemBParentDOM = Polymer.dom(itemBDOM.parentNode);
             var indexA, indexB;
-            if (itemA.parentNode === itemB.parentNode) {
-                var siblings = itemA.parentNode.childNodes;
+            if (itemAParentDOM === itemBParentDOM) {
+                var siblings = itemAParentDOM.childNodes;
                 indexA = Array.prototype.indexOf.call(siblings, itemA);
                 indexB = Array.prototype.indexOf.call(siblings, itemB);
                 return indexB - indexA;
@@ -706,7 +711,7 @@ Polymer({
 
             }
         });
-        //console.log(ids);
+        //console.log('after', ids);
     }
 
 
