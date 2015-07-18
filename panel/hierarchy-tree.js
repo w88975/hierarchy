@@ -402,7 +402,7 @@ Polymer({
         }
         else if ( event.detail.dragType === 'asset' ) {
             Editor.sendToPanel('scene.panel',
-                               'scene:create-assets',
+                               'scene:create-nodes-by-uuids',
                                event.detail.dragItems,
                                targetEL ? targetEL._userId : null
                               );

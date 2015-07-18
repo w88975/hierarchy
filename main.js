@@ -1,5 +1,4 @@
 var BrowserWindow = require('browser-window');
-var BuildMenu = require('./utils/build-menu');
 
 module.exports = {
     load: function () {
@@ -14,16 +13,19 @@ module.exports = {
 
     'hierarchy:popup-create-menu': function (event, x, y) {
         var template;
-        var menuData = Editor.menus['create-node'];
-        if (menuData) {
-            template = BuildMenu(menuData);
-        }
-        else {
-            template = [
+        var menuTmpl = Editor.menus['create-node'];
+
+        if ( !menuTmpl ) {
+            menuTmpl = [
                 { label: '(None)', enabled: false },
             ];
         }
-        var editorMenu = new Editor.Menu(template, event.sender);
+        else {
+            // NOTE: this will prevent menu item pollution
+            menuTmpl = JSON.parse(JSON.stringify(menuTmpl));
+        }
+
+        var editorMenu = new Editor.Menu(menuTmpl, event.sender);
         x = Math.floor(x);
         y = Math.floor(y);
         editorMenu.nativeMenu.popup(BrowserWindow.fromWebContents(event.sender), x, y);
