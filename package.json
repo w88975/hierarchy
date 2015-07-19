@@ -45,7 +45,10 @@
         "selection:hoverout",
         "scene:ready",
         "scene:reloading",
-        "scene:reply-query-hierarchy"
+        "scene:reply-query-hierarchy",
+        "hierarchy:rename",
+        "hierarchy:delete",
+        "hierarchy:show-path"
       ],
       "profiles": {
         "local": {

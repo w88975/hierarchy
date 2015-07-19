@@ -164,6 +164,22 @@ Editor.registerPanel( 'hierarchy.panel', {
         this.$.tree._updateSceneGraph(queryID, nodes);
     },
 
+    'hierarchy:rename': function ( id ) {
+        var el = this.$.tree._id2el[id];
+        if ( el ) {
+            this.$.tree.rename(el);
+        }
+    },
+
+    'hierarchy:delete': function ( ids ) {
+        Editor.Selection.unselect('node', ids, true);
+        Editor.sendToPanel( 'scene.panel', 'scene:delete-nodes', ids);
+    },
+
+    'hierarchy:show-path': function ( id ) {
+        Editor.info( 'Path: %s, ID: %s', id, this.$.tree.getPathByID(id) );
+    },
+
     _connectState: function ( connectState ) {
         switch (connectState) {
             case 'connecting': return 'fa fa-link connecting';

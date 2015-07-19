@@ -1,5 +1,5 @@
 (function () {
-
+var Path = require('fire-path');
 var treeDiff = Editor.require('packages://hierarchy/utils/tree-diff');
 
 Polymer({
@@ -15,6 +15,7 @@ Polymer({
         'focus': '_onFocus',
         'blur': '_onBlur',
         'mousedown': '_onMouseDown',
+        'contextmenu': '_onContextMenu',
         'dragstart': '_onDragStart',
         'dragend': '_onDragEnd',
         'dragover': '_onDragOver',
@@ -147,6 +148,28 @@ Polymer({
         }
     },
 
+    getPath: function(element) {
+        if ( !element )
+            return '';
+
+        if ( !element instanceof Editor.widgets['hierarchy-item'] ) {
+            return '';
+        }
+
+        var path = element.name;
+        var parentEL = Polymer.dom(element).parentNode;
+        while (parentEL instanceof Editor.widgets['hierarchy-item']) {
+            path = Path.join(parentEL.name, path);
+            parentEL = Polymer.dom(parentEL).parentNode;
+        }
+        return path;
+    },
+
+    getPathByID: function(id) {
+        var el = this._id2el[id];
+        return this.getPath(el);
+    },
+
     // events
 
     _onItemSelecting: function ( event ) {
@@ -213,6 +236,21 @@ Polymer({
 
         event.stopPropagation();
         this.clearSelection();
+    },
+
+    _onContextMenu: function ( event ) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var contextEL = Polymer.dom(event).localTarget;
+        Editor.Selection.setContext('node',contextEL._userId);
+
+        Editor.sendToCore(
+            'hierarchy:popup-context-menu',
+            event.clientX,
+            event.clientY,
+            Editor.requireIpcEvent
+        );
     },
 
     _onScroll: function ( event ) {
@@ -339,7 +377,7 @@ Polymer({
             return;
         }
 
-        // get next sibliing id
+        // get next sibling id
         var hoverEL = event.detail.dropTarget;
         var targetEL = null;
         var nextSiblingId = null;

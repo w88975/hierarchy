@@ -1,4 +1,5 @@
 var BrowserWindow = require('browser-window');
+var Menu = require('./core/menu');
 
 module.exports = {
     load: function () {
@@ -12,20 +13,20 @@ module.exports = {
     },
 
     'hierarchy:popup-create-menu': function (event, x, y) {
-        var template;
-        var menuTmpl = Editor.menus['create-node'];
+        var template = Menu.getCreateTemplate();
+        var editorMenu = new Editor.Menu(template, event.sender);
+        // TODO: editorMenu.add( '', Editor.menus['create-asset'] );
 
-        if ( !menuTmpl ) {
-            menuTmpl = [
-                { label: '(None)', enabled: false },
-            ];
-        }
-        else {
-            // NOTE: this will prevent menu item pollution
-            menuTmpl = JSON.parse(JSON.stringify(menuTmpl));
-        }
+        x = Math.floor(x);
+        y = Math.floor(y);
+        editorMenu.nativeMenu.popup(BrowserWindow.fromWebContents(event.sender), x, y);
+        editorMenu.dispose();
+    },
 
-        var editorMenu = new Editor.Menu(menuTmpl, event.sender);
+    'hierarchy:popup-context-menu': function (event, x, y) {
+        var template = Menu.getContextTemplate();
+        var editorMenu = new Editor.Menu(template, event.sender);
+
         x = Math.floor(x);
         y = Math.floor(y);
         editorMenu.nativeMenu.popup(BrowserWindow.fromWebContents(event.sender), x, y);
