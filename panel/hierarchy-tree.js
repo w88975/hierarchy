@@ -512,6 +512,12 @@ Polymer({
         });
     },
 
+    _hintRename: function ( el ) {
+        requestAnimationFrame( function () {
+            el.hint( 'orange', 500 );
+        });
+    },
+
     _applyCmds: function (cmds) {
         var id2el = this._id2el;
         var el, node, beforeNode, newParent, newEL;
@@ -554,6 +560,7 @@ Polymer({
 
                 case 'rename':
                     this.renameItemById(cmd.id, cmd.name);
+                    this._hintRename( this._id2el[cmd.id] );
                     break;
 
                 case 'move':
@@ -597,6 +604,14 @@ Polymer({
                     Editor.error('Unsupported operation', cmd.op);
                     break;
             }
+        }
+
+        // restore selection
+        if ( cmds.length ) {
+            var ids = Editor.Selection.curSelection('node');
+            ids.forEach( function ( id ) {
+                this.selectItemById(id);
+            }.bind(this));
         }
     },
 
