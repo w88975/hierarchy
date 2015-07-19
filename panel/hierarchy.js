@@ -8,7 +8,7 @@ Editor.registerPanel( 'hierarchy.panel', {
 
     ready: function () {
         this.connectState = 'connecting';
-        Editor.sendToPanel( 'scene.panel', 'scene:is-ready', 'hierarchy.panel' );
+        Editor.sendToWindows( 'scene:is-ready', 'hierarchy.panel' );
     },
 
     focusOnSearch: function ( event ) {
