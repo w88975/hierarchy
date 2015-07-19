@@ -179,6 +179,19 @@ Editor.registerWidget( 'hierarchy-item', {
 
         Editor.Selection.hover( 'node', null);
     },
+
+    hint: function ( color, duration ) {
+        color = color || 'white';
+        duration = duration || 1000;
+
+        var computedStyle = window.getComputedStyle(this.$.bar);
+        this.$.bar.animate([
+            { background: color, transform: 'scale(1.2)' },
+            { background: computedStyle.backgroundColor, transform: 'scale(1)' }
+        ], {
+            duration: duration
+        });
+    },
 });
 
 })();

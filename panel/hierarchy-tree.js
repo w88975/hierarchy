@@ -506,6 +506,12 @@ Polymer({
         }
     },
 
+    _hintNew: function ( el ) {
+        requestAnimationFrame( function () {
+            el.hint( 'green', 500 );
+        });
+    },
+
     _applyCmds: function (cmds) {
         var id2el = this._id2el;
         var el, node, beforeNode, newParent, newEL;
@@ -518,7 +524,9 @@ Polymer({
                     node = cmd.node;
                     newEL = this._newEntryRecursively(node, id2el);
                     newParent = cmd.parentId !== null ? id2el[cmd.parentId] : this;
+                    newParent.folded = false;
                     this.addItem( newParent, newEL, node.name, node.id );
+                    this._hintNew( newEL );
                     break;
 
                 case 'remove':
@@ -576,7 +584,9 @@ Polymer({
                     node = cmd.node;
                     newEL = this._newEntryRecursively(node, id2el);
                     newParent = cmd.parentId !== null ? id2el[cmd.parentId] : this;
+                    newParent.folded = false;
                     this.addItem( newParent, newEL, node.name, node.id );
+                    this._hintNew( newEL );
                     beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
                     if (beforeNode && beforeNode !== newEL) {
                         Polymer.dom(newParent).insertBefore(newEL, beforeNode);
