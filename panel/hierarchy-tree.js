@@ -722,8 +722,8 @@ Polymer({
             if ( !itemEL.folded && itemDOM.firstElementChild ) {
                 style.display = 'block';
                 style.top = itemDOM.firstElementChild.offsetTop + 'px';
-                style.left = itemEL.offsetLeft + 'px';
-                style.width = itemEL.offsetWidth + 'px';
+                style.left = itemDOM.firstElementChild.offsetLeft + 'px';
+                style.width = itemDOM.firstElementChild.offsetWidth + 'px';
                 style.height = '0px';
             }
             else {
@@ -733,13 +733,13 @@ Polymer({
         else {
             style.display = 'block';
 
-            style.left = parentEL.offsetLeft + 'px';
+            style.left = itemEL.offsetLeft + 'px';
             if ( position === 'before' )
                 style.top = itemEL.offsetTop + 'px';
             else if ( position === 'after'  )
                 style.top = (itemEL.offsetTop + itemEL.offsetHeight) + 'px';
 
-            style.width = parentEL.offsetWidth + 'px';
+            style.width = itemEL.offsetWidth + 'px';
             style.height = '0px';
         }
     },
