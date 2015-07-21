@@ -10,3 +10,12 @@
     color: black;
     font-weight: bold;
 }
+
+:host[invalid] > #header {
+    background-color: #f00;
+}
+
+:host[invalid] > #header > .wrapper {
+    color: black;
+    font-weight: bold;
+}

@@ -534,6 +534,7 @@ Polymer({
                     this.addItem( newParent, newEL, {
                         id: node.id,
                         name: node.name,
+                        canHaveChildren: node.canHaveChildren !== false,
                     } );
                     this._hintNew( newEL );
                     break;
@@ -560,6 +561,7 @@ Polymer({
                 //        this.addItem( newParent, newEL, {
                 //            id: node.id,
                 //            name: node.name
+                //            canHaveChildren: node.canHaveChildren !== false,
                 //        });
                 //    }
                 //    break;
@@ -601,6 +603,7 @@ Polymer({
                     this.addItem( newParent, newEL, {
                         id: node.id,
                         name: node.name,
+                        canHaveChildren: node.canHaveChildren !== false,
                     } );
                     this._hintNew( newEL );
                     beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
@@ -663,6 +666,7 @@ Polymer({
             this.addItem( this, newEL, {
                 id: entry.id,
                 name: entry.name,
+                canHaveChildren: entry.canHaveChildren !== false,
             } );
 
             newEL.folded = false;
@@ -690,7 +694,8 @@ Polymer({
                 var childEL = this._newEntryRecursively(childEntry, id2el);
                 this.addItem( el, childEL, {
                     id: childEntry.id,
-                    name: childEntry.name
+                    name: childEntry.name,
+                    canHaveChildren: childEntry.canHaveChildren !== false,
                 } );
                 // childEL.folded = false;
             }.bind(this) );
@@ -709,6 +714,11 @@ Polymer({
             style.top = (itemEL.offsetTop-1) + 'px';
             style.width = (itemEL.offsetWidth+4) + 'px';
             style.height = (itemEL.offsetHeight+3) + 'px';
+
+            if ( !itemEL.canHaveChildren ) {
+                itemEL.invalid = true;
+                this.$.highlightBorder.setAttribute('invalid', '');
+            }
 
             itemEL.highlighted = true;
         }
@@ -761,9 +771,12 @@ Polymer({
 
     _cancelHighligting: function () {
         this.$.highlightBorder.style.display = 'none';
+        this.$.highlightBorder.removeAttribute('invalid');
+
         this.$.insertLine.style.display = 'none';
 
         if (this._curInsertParentEL) {
+            this._curInsertParentEL.invalid = false;
             this._curInsertParentEL.highlighted = false;
         }
     },

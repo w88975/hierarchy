@@ -54,6 +54,12 @@ Editor.registerWidget( 'hierarchy-item', {
             value: false,
             reflectToAttribute: true
         },
+
+        invalid: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
     },
 
     listeners: {
