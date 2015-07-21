@@ -531,7 +531,10 @@ Polymer({
                     newEL = this._newEntryRecursively(node, id2el);
                     newParent = cmd.parentId !== null ? id2el[cmd.parentId] : this;
                     newParent.folded = false;
-                    this.addItem( newParent, newEL, node.name, node.id );
+                    this.addItem( newParent, newEL, {
+                        id: node.id,
+                        name: node.name,
+                    } );
                     this._hintNew( newEL );
                     break;
 
@@ -554,7 +557,10 @@ Polymer({
                 //        newParent = Polymer.dom(el).parentNode;
                 //        this.removeItem(el);
                 //        newEL = this._newEntryRecursively(node, id2el);
-                //        this.addItem( newParent, newEL, node.name, node.id );
+                //        this.addItem( newParent, newEL, {
+                //            id: node.id,
+                //            name: node.name
+                //        });
                 //    }
                 //    break;
 
@@ -592,7 +598,10 @@ Polymer({
                     newEL = this._newEntryRecursively(node, id2el);
                     newParent = cmd.parentId !== null ? id2el[cmd.parentId] : this;
                     newParent.folded = false;
-                    this.addItem( newParent, newEL, node.name, node.id );
+                    this.addItem( newParent, newEL, {
+                        id: node.id,
+                        name: node.name,
+                    } );
                     this._hintNew( newEL );
                     beforeNode = Polymer.dom(newParent).childNodes[cmd.index];
                     if (beforeNode && beforeNode !== newEL) {
@@ -651,7 +660,10 @@ Polymer({
         // console.time('hierarchy-tree._build()');
         data.forEach( function ( entry ) {
             var newEL = this._newEntryRecursively(entry, id2el);
-            this.addItem( this, newEL, entry.name, entry.id );
+            this.addItem( this, newEL, {
+                id: entry.id,
+                name: entry.name,
+            } );
 
             newEL.folded = false;
         }.bind(this));
@@ -676,7 +688,10 @@ Polymer({
         if ( entry.children ) {
             entry.children.forEach( function ( childEntry ) {
                 var childEL = this._newEntryRecursively(childEntry, id2el);
-                this.addItem( el, childEL, childEntry.name, childEntry.id );
+                this.addItem( el, childEL, {
+                    id: childEntry.id,
+                    name: childEntry.name
+                } );
                 // childEL.folded = false;
             }.bind(this) );
         }
