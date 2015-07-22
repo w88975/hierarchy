@@ -113,6 +113,7 @@ Editor.registerPanel( 'hierarchy.panel', {
 
         ids.forEach( function ( id ) {
             this.$.tree.selectItemById(id);
+            this.$.tree.expand(id, true);
         }.bind(this));
     },
 
