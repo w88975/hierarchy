@@ -161,8 +161,8 @@ Editor.registerPanel( 'hierarchy.panel', {
         this.$.tree.waitForSceneReady();
     },
 
-    'scene:reply-query-hierarchy': function ( queryID, nodes ) {
-        this.$.tree._updateSceneGraph(queryID, nodes);
+    'scene:reply-query-hierarchy': function ( queryID, sceneID, nodes ) {
+        this.$.tree._updateSceneGraph(queryID, sceneID, nodes);
     },
 
     'hierarchy:rename': function ( id ) {

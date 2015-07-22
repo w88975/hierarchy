@@ -52,7 +52,7 @@
       ],
       "profiles": {
         "local": {
-          "collapses-status": []
+          "item-states": []
         }
       }
     }

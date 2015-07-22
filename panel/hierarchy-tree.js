@@ -41,6 +41,7 @@ Polymer({
     ready: function () {
         this._shiftStartElement = null;
         this._lastSnapshot = null;
+        this._states = {};
 
         this._initFocusable(this);
         this._initDroppable(this);
@@ -518,7 +519,14 @@ Polymer({
         });
     },
 
-    _applyCmds: function (cmds) {
+    _applyCmds: function (sceneID, cmds) {
+        if ( cmds.length === 0 ) {
+            return;
+        }
+
+        // store item states
+        this._storeItemStates(sceneID);
+
         var id2el = this._id2el;
         var el, node, beforeNode, newParent, newEL;
 
@@ -618,13 +626,31 @@ Polymer({
             }
         }
 
+        // restore item states
+        this._restoreItemStates(sceneID);
+    },
+
+    _storeItemStatesRecursively ( results, idPath, el ) {
+    },
+
+    _storeItemStates: function ( sceneID ) {
+        var results = [];
+
+        // for ( var id in this._id2el ) {
+        //     if ( this._id2el[id].foldable ) {
+        //         states.push({
+        //             id: this._id2el[id]._userId,
+        //             folded: this._id2el[id].folded
+        //         });
+        //     }
+        // }
+
+        this._states[sceneID] = results;
+    },
+
+    _restoreItemStates: function ( sceneID ) {
         // restore selection
-        if ( cmds.length ) {
-            var ids = Editor.Selection.curSelection('node');
-            ids.forEach( function ( id ) {
-                this.selectItemById(id);
-            }.bind(this));
-        }
+        this._syncSelection();
     },
 
     _queryHierarchyAfter: function ( timeout ) {
@@ -639,7 +665,7 @@ Polymer({
         this._queryID = id;
     },
 
-    _updateSceneGraph: function ( queryID, nodes ) {
+    _updateSceneGraph: function ( queryID, sceneID, nodes ) {
         if ( this._queryID !== queryID ) {
             return;
         }
@@ -651,7 +677,7 @@ Polymer({
                 console.log('rebuild');
             }
             else {
-                this._applyCmds(diffResult.cmds);
+                this._applyCmds( sceneID, diffResult.cmds );
             }
             this._lastSnapshot = nodes;
         }
@@ -673,13 +699,8 @@ Polymer({
         }.bind(this));
         // console.timeEnd('hierarchy-tree._build()');
 
-        // DISABLE: I should find a place restore it, not here.
-        // // sync the selection
-        // var selection = Editor.Selection.curSelection('node');
-        // selection.forEach(function ( id ) {
-        //     this.selectItemById(id);
-        // }.bind(this));
-        // this.activeItemById(Editor.Selection.curActivate('node'));
+        // sync the selection
+        this._syncSelection();
     },
 
     _newEntryRecursively: function ( entry, id2el ) {
@@ -781,6 +802,8 @@ Polymer({
         }
     },
 
+    //
+
     _sortDraggingItems: function (ids) {
         //console.log('before', ids);
         var id2el = this._id2el;
@@ -803,9 +826,15 @@ Polymer({
             }
         });
         //console.log('after', ids);
-    }
+    },
 
-
+    _syncSelection: function () {
+        var ids = Editor.Selection.curSelection('node');
+        ids.forEach( function ( id ) {
+            this.selectItemById(id);
+        }.bind(this));
+        this.activeItemById(Editor.Selection.curActivate('node'));
+    },
 });
 
 })();
