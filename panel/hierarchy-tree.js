@@ -42,6 +42,7 @@ Polymer({
         this._shiftStartElement = null;
         this._lastSnapshot = null;
         this._states = {};
+        this._sceneID = '';
 
         this._initFocusable(this);
         this._initDroppable(this);
@@ -519,14 +520,7 @@ Polymer({
         });
     },
 
-    _applyCmds: function (sceneID, cmds) {
-        if ( cmds.length === 0 ) {
-            return;
-        }
-
-        // store item states
-        this._storeItemStates(sceneID);
-
+    _applyCmds: function (cmds) {
         var id2el = this._id2el;
         var el, node, beforeNode, newParent, newEL;
 
@@ -625,30 +619,19 @@ Polymer({
                     break;
             }
         }
-
-        // restore item states
-        this._restoreItemStates(sceneID);
     },
 
     _storeItemStatesRecursively ( results, idPath, el ) {
     },
 
     _storeItemStates: function ( sceneID ) {
-        var results = [];
-
-        // for ( var id in this._id2el ) {
-        //     if ( this._id2el[id].foldable ) {
-        //         states.push({
-        //             id: this._id2el[id]._userId,
-        //             folded: this._id2el[id].folded
-        //         });
-        //     }
-        // }
-
-        this._states[sceneID] = results;
+        this._states[sceneID] = this.dumpItemStates();
     },
 
     _restoreItemStates: function ( sceneID ) {
+        // restore items states
+        this.restoreItemStates(this._states[sceneID]);
+
         // restore selection
         this._syncSelection();
     },
@@ -670,18 +653,31 @@ Polymer({
             return;
         }
 
+        if ( !sceneID )
+            sceneID = 'empty';
+
         var diffResult = treeDiff(this._lastSnapshot, nodes);
-        if (! diffResult.equal) {
+        if ( !diffResult.equal ) {
+            // store item states
+            if ( this._sceneID ) {
+                this._storeItemStates(this._sceneID);
+            }
+
+            // apply changes
             if (diffResult.cmds.length > 100) {
                 this._rebuild(nodes);
                 console.log('rebuild');
             }
             else {
-                this._applyCmds( sceneID, diffResult.cmds );
+                this._applyCmds( diffResult.cmds );
             }
             this._lastSnapshot = nodes;
+
+            // restore item states
+            this._restoreItemStates(sceneID);
         }
 
+        this._sceneID = sceneID;
         this._queryHierarchyAfter(100);
     },
 
