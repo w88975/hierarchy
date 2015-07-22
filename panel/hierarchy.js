@@ -55,7 +55,6 @@ Editor.registerPanel( 'hierarchy.panel', {
         }
 
         var ids = Editor.Selection.curSelection('node');
-        Editor.Selection.clear('node');
         Editor.sendToPanel( 'scene.panel', 'scene:delete-nodes', ids);
     },
 
