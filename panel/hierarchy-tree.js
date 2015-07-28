@@ -462,12 +462,13 @@ Polymer({
     _onRenameValueChanged: function ( event ) {
         var targetEL = this.$.nameInput._renamingEL;
         if ( targetEL ) {
-            Editor.sendToPanel('scene.panel', 'scene:node-set-property',
-                               targetEL._userId,
-                               'name',
-                               this.$.nameInput.value,
-                               false
-                              );
+            Editor.sendToPanel('scene.panel', 'scene:node-set-property', {
+                id: targetEL._userId,
+                path: 'name',
+                type: 'String',
+                value: this.$.nameInput.value,
+                isMixin: false,
+            });
 
             this.$.nameInput._renamingEL = null;
             this.$.nameInput.hidden = true;
