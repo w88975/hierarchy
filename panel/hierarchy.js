@@ -4,11 +4,17 @@ Editor.registerPanel( 'hierarchy.panel', {
     is: 'editor-hierarchy',
 
     properties: {
+        filterText: {
+            type: String,
+            value: '',
+            observer: '_onFilterTextChanged'
+        }
     },
 
     ready: function () {
         this.connectState = 'connecting';
         Editor.sendToWindows( 'scene:is-ready', 'hierarchy.panel' );
+        this.$.searchResult.hierarchyTree = this.$.tree;
     },
 
     focusOnSearch: function ( event ) {
@@ -198,7 +204,20 @@ Editor.registerPanel( 'hierarchy.panel', {
     _onCreateClick: function ( event ) {
         var rect = this.$.createBtn.getBoundingClientRect();
         Editor.sendToCore('hierarchy:popup-create-menu', rect.left, rect.bottom + 5, Editor.requireIpcEvent);
-    }
+    },
+
+    _onFilterTextChanged: function () {
+        this.$.searchResult.filter(this.filterText);
+        if (this.filterText) {
+            this.$.searchResult.hidden = false;
+            this.$.tree.hidden = true;
+            return;
+        }
+
+        this.$.searchResult.hidden = true;
+        this.$.searchResult.clear();
+        this.$.tree.hidden = false;
+    },
 });
 
 })();

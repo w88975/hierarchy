@@ -1,5 +1,6 @@
 <link rel="import" href="packages://ui-kit/widget/index.html">
 <link rel="import" href="hierarchy-tree.html">
+<link rel="import" href="hierarchy-search-result.html">
 
 <dom-module id="editor-hierarchy">
     <link rel="import" type="css" href="hierarchy.css">
@@ -9,7 +10,7 @@
             <editor-button id="createBtn" on-click="_onCreateClick">
                 <i class="fa fa-plus"></i>
             </editor-button>
-            <editor-input id="search" class="flex-1" placeholder="Search..."></editor-input>
+            <editor-input id="search" class="flex-1" input-value="{{filterText}}" placeholder="Search..."></editor-input>
             <i class$="{{_connectState(connectState)}}"
                 on-click="_onStateClick"
                 >
@@ -18,6 +19,7 @@
         <hierarchy-tree id="tree" class="flex-1"
             connect-state="{{connectState}}"
         ></hierarchy-tree>
+        <hierarchy-search-result id="searchResult" hidden></hierarchy-search-result>
     </template>
 </dom-module>
 
